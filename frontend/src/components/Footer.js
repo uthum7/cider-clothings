@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaFacebookF, FaTwitter, FaInstagram } from 'react-icons/fa';
+import { FaFacebookF, FaInstagram, FaTiktok, FaYoutube } from 'react-icons/fa';
 
 const Footer = () => {
   return (
@@ -8,9 +8,9 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
-            <h3 className="text-lg font-semibold tracking-wider uppercase">Your Shop</h3>
+            <h3 className="text-lg font-semibold tracking-wider uppercase">Cider Clothing</h3>
             <p className="mt-4 text-gray-400 text-sm">
-              The best place to find your style. Unique designs for everyone.
+              Representing down south with swag clothing that defines your style. Unique designs for everyone.
             </p>
           </div>
           <div>
@@ -39,11 +39,12 @@ const Footer = () => {
           </div>
         </div>
         <div className="mt-10 pt-8 border-t border-gray-700 flex flex-col md:flex-row items-center justify-between">
-          <p className="text-sm text-gray-400">© 2025 Your Clothing Shop. All Rights Reserved.</p>
+          <p className="text-sm text-gray-400">© 2025 Cider Clothing - Swag Clothing Shop. All Rights Reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white"><FaFacebookF /></a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white"><FaTwitter /></a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white"><FaInstagram /></a>
+            <a href="https://www.fb.com/l/6lp1kJRRR" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white"><FaFacebookF /></a>
+            <a href="https://www.instagram.com/cider.clothing?utm_source=qr&igsh=c2duMG56NGI2bmEz" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white"><FaInstagram /></a>
+            <a href="#" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white"><FaTiktok /></a>
+            <a href="#" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white"><FaYoutube /></a>
           </div>
         </div>
       </div>

@@ -1,0 +1,13 @@
+// backend/models/Category.js
+const mongoose = require('mongoose');
+
+const categorySchema = mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Please add a category name'],
+    unique: true, // Ensure category names are unique
+    trim: true,
+  },
+}, { timestamps: true });
+
+module.exports = mongoose.model('Category', categorySchema);
