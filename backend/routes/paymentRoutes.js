@@ -11,8 +11,8 @@ const router = express.Router();
 
 // @route   POST /api/payment/generate-hash
 // @desc    Generate PayHere payment hash for security
-// @access  Private
-router.post('/generate-hash', protect, generatePayHereHash);
+// @access  Public (so guests can generate hash)
+router.post('/generate-hash', generatePayHereHash);
 
 // @route   POST /api/payment/notify
 // @desc    Handle PayHere payment notifications (webhook)

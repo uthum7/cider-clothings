@@ -35,7 +35,8 @@ exports.addOrderItems = async (req, res) => {
         name: item.name,
         quantity: item.quantity,
         price: item.price,
-        // Add size/color here if your frontend sends them and your orderItem schema supports it
+        size: item.size,
+        color: item.color
       })),
       shippingAddress,
       paymentMethod,
@@ -75,6 +76,75 @@ exports.addOrderItems = async (req, res) => {
   } catch (error) {
     console.error("Add order items error:", error);
     res.status(500).json({ message: 'Server error creating order.' });
+  }
+};
+
+// @desc    Create new guest order
+// @route   POST /api/orders/guest
+// @access  Public
+exports.addGuestOrderItems = async (req, res) => {
+  const {
+    orderItems,
+    shippingAddress,
+    paymentMethod,
+    itemsPrice,
+    shippingPrice,
+    taxPrice,
+    totalPrice,
+  } = req.body;
+
+  if (!orderItems || orderItems.length === 0) {
+    return res.status(400).json({ message: 'No order items found in the request.' });
+  }
+
+  // Basic validation for shipping address with guest details
+  if (!shippingAddress || !shippingAddress.address || !shippingAddress.city || !shippingAddress.zipCode || !shippingAddress.country || !shippingAddress.firstName || !shippingAddress.lastName || !shippingAddress.phone) {
+      return res.status(400).json({ message: 'Valid shipping address and contact info (first name, last name, phone) is required.' });
+  }
+
+  try {
+    // Create a new Order instance without user
+    const order = new Order({
+      orderItems: orderItems.map(item => ({
+        productId: item.productId, 
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        size: item.size,
+        color: item.color
+      })),
+      shippingAddress,
+      paymentMethod,
+      itemsPrice,
+      shippingPrice,
+      taxPrice,
+      totalPrice,
+    });
+
+    const createdOrder = await order.save();
+
+    // --- Decrement Stock for Purchased Products ---
+    for (const item of createdOrder.orderItems) {
+      const product = await Product.findById(item.productId);
+      if (product) {
+        if (product.stock < item.quantity) {
+          console.warn(`Insufficient stock for product ${product.name} (ID: ${product._id}). Ordered: ${item.quantity}, Available: ${product.stock}`);
+          product.stock = 0; 
+        } else {
+          product.stock -= item.quantity;
+        }
+        await product.save();
+      } else {
+        console.warn(`Product not found for stock update: ${item.productId}`);
+      }
+    }
+    // --- End Stock Management ---
+
+    res.status(201).json(createdOrder);
+
+  } catch (error) {
+    console.error("Add guest order items error:", error);
+    res.status(500).json({ message: 'Server error creating guest order.' });
   }
 };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { formatCurrency } from '../utils/currencyFormatter';
 
 const HomePage = () => {
   const [homepageData, setHomepageData] = useState({
@@ -87,22 +88,31 @@ const HomePage = () => {
                   style={{ backgroundImage: `url(${banner.imageUrl})` }}
                 >
                   {/* Banner Overlay */}
-                  <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                    <div className="text-center text-white px-4 max-w-4xl">
-                      <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fadeInUp">
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-900/50 to-transparent flex items-end justify-center md:justify-start px-6 md:px-16 pb-16 md:pb-24">
+                    <div className="max-w-7xl w-full animate-fadeInUp">
+                      {/* Skewed Accent Badge */}
+                      <div className="inline-block bg-indigo-600 text-white font-bold tracking-widest text-xs md:text-sm uppercase px-4 py-1.5 mb-6 transform -skew-x-12 shadow-lg">
+                        <span className="inline-block transform skew-x-12">New Season Drop</span>
+                      </div>
+                      
+                      <h1 className="text-6xl md:text-[8rem] font-black text-white tracking-tighter uppercase leading-[0.85] drop-shadow-2xl">
                         {banner.title}
                       </h1>
-                      {banner.subtitle && (
-                        <p className="text-lg md:text-xl mb-8 animate-fadeInUp animation-delay-200">
-                          {banner.subtitle}
-                        </p>
-                      )}
-                      <Link
-                        to={banner.buttonLink}
-                        className="inline-block bg-indigo-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition-colors animate-fadeInUp animation-delay-400"
-                      >
-                        {banner.buttonText}
-                      </Link>
+                      
+                      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 border-t border-white/20 pt-8 mt-10">
+                          {banner.subtitle && (
+                            <p className="text-xl md:text-2xl font-medium text-gray-300 max-w-2xl leading-relaxed">
+                              {banner.subtitle}
+                            </p>
+                          )}
+                          <Link
+                            to={banner.buttonLink}
+                            className="shrink-0 inline-flex items-center justify-center bg-white text-black px-12 py-5 text-lg md:text-xl font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all duration-300 group shadow-2xl"
+                          >
+                            {banner.buttonText}
+                            <svg className="w-6 h-6 ml-4 group-hover:translate-x-3 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                          </Link>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -172,48 +182,46 @@ const HomePage = () => {
       {homepageData.newArrivals.length > 0 && (
         <section className="py-16 sm:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <div className="text-center mb-16 relative">
+              <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 mb-4 tracking-tight">
                 New Arrivals
               </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
+              <div className="w-24 h-1.5 bg-indigo-600 mx-auto rounded-full mb-6"></div>
+              <p className="text-lg text-gray-500 max-w-2xl mx-auto font-light">
                 Discover our latest collection of trendy and stylish clothing
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
               {homepageData.newArrivals.map((product) => (
-                <div key={product._id} className="group relative">
-                  <div className="w-full h-80 bg-gray-200 aspect-w-1 aspect-h-1 rounded-md overflow-hidden group-hover:opacity-75 transition-opacity">
+                <div key={product._id} className="group relative bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 overflow-hidden pb-6">
+                  <div className="w-full h-80 bg-gray-100 overflow-hidden relative">
                     <img
                       src={product.images && product.images[0] ? product.images[0] : '/placeholder-product.jpg'}
                       alt={product.name}
-                      className="w-full h-full object-center object-cover"
+                      className="w-full h-full object-center object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
                       onError={(e) => {
                         e.target.src = '/placeholder-product.jpg';
                       }}
                     />
                     {/* New Badge */}
-                    <div className="absolute top-2 left-2">
-                      <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                    <div className="absolute top-4 left-4 z-10">
+                      <span className="bg-gray-900/90 backdrop-blur-sm text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
                         New
                       </span>
                     </div>
                   </div>
-                  <div className="mt-4 flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="text-sm text-gray-700">
-                        {/* UPDATED: Changed from /product/ to /products/ to match ProductDetailPage route */}
+                  <div className="mt-6 px-4 flex flex-col items-center text-center">
+                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors mb-1">
                         <Link to={`/products/${product._id}`}>
                           <span aria-hidden="true" className="absolute inset-0" />
                           {product.name}
                         </Link>
-                      </h3>
-                      <p className="text-xs text-gray-500 mt-1">
+                    </h3>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider font-medium mb-3">
                         {product.category?.name}
-                      </p>
-                    </div>
-                    <p className="text-sm font-medium text-gray-900">
-                      LKR {product.price?.toLocaleString()}
+                    </p>
+                    <p className="text-base font-extrabold text-indigo-600">
+                      {formatCurrency(product.price)}
                     </p>
                   </div>
                 </div>
@@ -235,48 +243,46 @@ const HomePage = () => {
       {homepageData.featuredProducts.length > 0 && (
         <section className="py-16 sm:py-24 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <div className="text-center mb-16 relative">
+              <h2 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 mb-4 tracking-tight">
                 Featured Products
               </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
+              <div className="w-24 h-1.5 bg-indigo-600 mx-auto rounded-full mb-6"></div>
+              <p className="text-lg text-gray-500 max-w-2xl mx-auto font-light">
                 Handpicked favorites from our collection
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
               {homepageData.featuredProducts.map((product) => (
-                <div key={product._id} className="group relative">
-                  <div className="w-full h-80 bg-gray-200 aspect-w-1 aspect-h-1 rounded-md overflow-hidden group-hover:opacity-75 transition-opacity">
+                <div key={product._id} className="group relative bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 overflow-hidden pb-6">
+                  <div className="w-full h-80 bg-gray-100 overflow-hidden relative">
                     <img
                       src={product.images && product.images[0] ? product.images[0] : '/placeholder-product.jpg'}
                       alt={product.name}
-                      className="w-full h-full object-center object-cover"
+                      className="w-full h-full object-center object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
                       onError={(e) => {
                         e.target.src = '/placeholder-product.jpg';
                       }}
                     />
                     {/* Featured Badge */}
-                    <div className="absolute top-2 left-2">
-                      <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
+                    <div className="absolute top-4 left-4 z-10">
+                      <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
                         Featured
                       </span>
                     </div>
                   </div>
-                  <div className="mt-4 flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="text-sm text-gray-700">
-                        {/* UPDATED: Changed from /product/ to /products/ to match ProductDetailPage route */}
+                  <div className="mt-6 px-4 flex flex-col items-center text-center">
+                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors mb-1">
                         <Link to={`/products/${product._id}`}>
                           <span aria-hidden="true" className="absolute inset-0" />
                           {product.name}
                         </Link>
-                      </h3>
-                      <p className="text-xs text-gray-500 mt-1">
+                    </h3>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider font-medium mb-3">
                         {product.category?.name}
-                      </p>
-                    </div>
-                    <p className="text-sm font-medium text-gray-900">
-                      LKR {product.price?.toLocaleString()}
+                    </p>
+                    <p className="text-base font-extrabold text-indigo-600">
+                      {formatCurrency(product.price)}
                     </p>
                   </div>
                 </div>

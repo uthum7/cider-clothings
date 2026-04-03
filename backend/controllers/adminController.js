@@ -12,7 +12,7 @@ const mongoose = require('mongoose'); // For ObjectId validation
 // @route   POST /api/admin/products
 // @access  Private (Admin)
 exports.createProduct = async (req, res) => {
-  const { name, description, price, stock, category, status } = req.body;
+  const { name, description, price, stock, category, status, sizes, colors } = req.body;
 
   try {
     if (!name || !description || !price || !stock || !category) {
@@ -34,9 +34,19 @@ exports.createProduct = async (req, res) => {
         return res.status(400).json({ message: 'At least one product image is required.' });
     }
 
+    let parsedSizes = [];
+    if (sizes) {
+      try { parsedSizes = JSON.parse(sizes); } catch (e) { parsedSizes = sizes.split(',').map(s => s.trim()).filter(s => s); }
+    }
+    let parsedColors = [];
+    if (colors) {
+      try { parsedColors = JSON.parse(colors); } catch (e) { parsedColors = colors.split(',').map(s => s.trim()).filter(s => s); }
+    }
+
     const product = new Product({
       name, description, price: parsedPrice, stock: parsedStock, category: categoryExists._id,
       images: imageUrls, status: status || 'Active',
+      sizes: parsedSizes, colors: parsedColors
     });
 
     const createdProduct = await product.save();
@@ -81,7 +91,7 @@ exports.getProductById = async (req, res) => {
 // @route   PUT /api/admin/products/:id
 // @access  Private (Admin)
 exports.updateProduct = async (req, res) => {
-  const { name, description, price, stock, category, status } = req.body;
+  const { name, description, price, stock, category, status, sizes, colors } = req.body;
   const { id } = req.params;
 
   try {
@@ -102,6 +112,15 @@ exports.updateProduct = async (req, res) => {
         product.stock = parsedStock;
     }
     product.status = status || product.status;
+    
+    if (sizes !== undefined) {
+      try { product.sizes = JSON.parse(sizes); }
+      catch (e) { product.sizes = sizes.split(',').map(s => s.trim()).filter(s => s); }
+    }
+    if (colors !== undefined) {
+      try { product.colors = JSON.parse(colors); }
+      catch (e) { product.colors = colors.split(',').map(s => s.trim()).filter(s => s); }
+    }
 
     // Handle category update
     if (category) {

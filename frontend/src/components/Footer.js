@@ -26,7 +26,9 @@ const Footer = () => {
             <ul className="mt-4 space-y-2 text-sm">
               <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact Us</Link></li>
               <li><Link to="/faq" className="text-gray-400 hover:text-white">FAQ</Link></li>
-              <li><Link to="/shipping" className="text-gray-400 hover:text-white">Shipping</Link></li>
+              <li><Link to="/refund-policy" className="text-gray-400 hover:text-white">Refund Policy</Link></li>
+              <li><Link to="/privacy-policy" className="text-gray-400 hover:text-white">Privacy Policy</Link></li>
+              <li><Link to="/terms-conditions" className="text-gray-400 hover:text-white">Terms & Conditions</Link></li>
             </ul>
           </div>
           <div>
@@ -43,8 +45,8 @@ const Footer = () => {
           <div className="flex space-x-6 mt-4 md:mt-0">
             <a href="https://www.fb.com/l/6lp1kJRRR" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white"><FaFacebookF /></a>
             <a href="https://www.instagram.com/cider.clothing?utm_source=qr&igsh=c2duMG56NGI2bmEz" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white"><FaInstagram /></a>
-            <a href="#" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white"><FaTiktok /></a>
-            <a href="#" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white"><FaYoutube /></a>
+            <a href="https://www.tiktok.com/@cider.clothing" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white"><FaTiktok /></a>
+            <a href="https://www.youtube.com/@ciderclothing" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white"><FaYoutube /></a>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@
 const express = require('express');
 const {
   addOrderItems,
+  addGuestOrderItems,
   getOrderById,
   updateOrderToPaid,
   updateOrderStatus, // For status updates (can be admin or customer for tracking)
@@ -13,6 +14,9 @@ const router = express.Router();
 
 // POST /api/orders - Create a new order
 router.post('/', protect, addOrderItems);
+
+// POST /api/orders/guest - Create a new guest order
+router.post('/guest', addGuestOrderItems);
 
 // GET /api/orders/:id - Get a specific order by ID
 // Accessible by the order owner OR an admin

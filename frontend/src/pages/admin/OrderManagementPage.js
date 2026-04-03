@@ -5,6 +5,7 @@ import { Search } from 'lucide-react';
 // import { mockOrders } from '../../data/mockDatabase'; // Mock data is no longer used
 import axios from 'axios'; // Import axios
 import { useAuth } from '../../context/AuthContext'; // Import useAuth for token
+import { formatCurrency } from '../../utils/currencyFormatter';
 
 const getStatusClass = (status) => {
   switch (status) {
@@ -118,7 +119,7 @@ const OrderManagementPage = () => {
                     <div>{order.user?.name || 'N/A'}</div> {/* Safely access user name */}
                     <div className="text-xs text-gray-500">{order.user?.email || 'N/A'}</div> {/* Safely access user email */}
                   </td>
-                  <td className="px-6 py-4">${order.totalPrice.toFixed(2)}</td> {/* Use totalPrice from fetched order */}
+                  <td className="px-6 py-4">{formatCurrency(order.totalPrice)}</td> {/* Use totalPrice from fetched order */}
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(order.status)}`}>{order.status}</span>
                   </td>

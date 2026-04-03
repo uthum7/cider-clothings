@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../../context/AuthContext'; // Adjust path as needed
+import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
+import { formatCurrency } from '../../utils/currencyFormatter';
+import { getColorCode } from '../../utils/colorHelper';
 
 const CheckoutPage = () => {
-    // State management
-    const [cartItems, setCartItems] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { cartItems, loading, fetchCartItems } = useCart();
     const [orderLoading, setOrderLoading] = useState(false);
     const [error, setError] = useState('');
     
@@ -32,42 +33,11 @@ const CheckoutPage = () => {
     const { authToken } = useAuth();
     const navigate = useNavigate();
 
-    // Fetch cart items on component mount
+    // Removed native fetch logic heavily dependent on auth. CartContext handles this intelligently now.
+    // Sync cart when authToken changes
     useEffect(() => {
         fetchCartItems();
     }, [authToken]);
-
-    const fetchCartItems = async () => {
-        try {
-            if (!authToken) {
-                setError("Please sign in to continue checkout");
-                setLoading(false);
-                return;
-            }
-
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${authToken}`,
-                },
-            };
-
-            const response = await axios.get('/api/users/cart', config);
-            console.log('Cart response:', response.data);
-            
-            if (response.data.length === 0) {
-                setError("Your cart is empty. Add items before checkout.");
-                setTimeout(() => navigate('/products'), 2000);
-                return;
-            }
-            
-            setCartItems(response.data);
-        } catch (err) {
-            console.error("Fetch cart error:", err);
-            setError("Failed to load cart items");
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // Calculate totals
     const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -115,56 +85,66 @@ const CheckoutPage = () => {
     };
 
     // Payment processing - Using PayHere (Most popular in Sri Lanka)
-    const processPayment = () => {
-        return new Promise((resolve, reject) => {
-            // PayHere configuration
-            const payment = {
-                sandbox: true, // Set to false for production
-                merchant_id: "1221149", // Replace with your PayHere Merchant ID
-                return_url: `${window.location.origin}/order-success`,
-                cancel_url: `${window.location.origin}/checkout`,
-                notify_url: "/api/payment/notify", // Your backend endpoint
-                order_id: `ORDER_${Date.now()}`,
-                items: cartItems.map(item => item.name).join(', '),
-                amount: total.toFixed(2),
-                currency: "LKR",
-                hash: "", // Generate hash on backend for security
-                first_name: shippingInfo.firstName,
-                last_name: shippingInfo.lastName,
-                email: "", // Get from user profile
-                phone: shippingInfo.phone,
-                address: shippingInfo.address,
-                city: shippingInfo.city,
-                country: "Sri Lanka"
-            };
+    const processPayment = (orderId) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                // Generate hash on backend for security
+                const config = authToken ? {
+                    headers: { Authorization: `Bearer ${authToken}` }
+                } : {};
+                
+                const hashResponse = await axios.post('/api/payment/generate-hash', {
+                    order_id: orderId,
+                    amount: total.toFixed(2),
+                    currency: "LKR"
+                }, config);
+                
+                const { hash, merchant_id } = hashResponse.data;
+                
+                // PayHere configuration
+                const payment = {
+                    sandbox: true, // Set to false for production
+                    merchant_id: merchant_id, 
+                    return_url: `${window.location.origin}/order-success`,
+                    cancel_url: `${window.location.origin}/checkout`,
+                    notify_url: `${window.location.origin}/api/payment/notify`, // Replace with your public webhook URL in production!
+                    order_id: orderId,
+                    items: cartItems.map(item => item.name).join(', ').substring(0, 100),
+                    amount: total.toFixed(2),
+                    currency: "LKR",
+                    hash: hash, 
+                    first_name: shippingInfo.firstName,
+                    last_name: shippingInfo.lastName,
+                    email: "customer@example.com", // Replace appropriately if user email is available
+                    phone: shippingInfo.phone,
+                    address: shippingInfo.address,
+                    city: shippingInfo.city,
+                    country: "Sri Lanka"
+                };
 
-            // For demo purposes, simulate payment success after 2 seconds
-            console.log('Processing payment with data:', payment);
-            setTimeout(() => {
-                console.log("Demo: Payment completed successfully");
-                resolve(`DEMO_${Date.now()}`);
-            }, 2000);
+                // PayHere checkout events
+                window.payhere.onCompleted = function onCompleted(completedOrderId) {
+                    console.log("Payment completed. OrderID:" + completedOrderId);
+                    resolve(completedOrderId);
+                };
 
-            // Uncomment below for actual PayHere integration
-            /*
-            // PayHere checkout
-            payhere.startPayment(payment);
+                window.payhere.onDismissed = function onDismissed() {
+                    console.log("Payment dismissed");
+                    reject("Payment was canceled by user");
+                };
 
-            payhere.onCompleted = function onCompleted(orderId) {
-                console.log("Payment completed. OrderID:" + orderId);
-                resolve(orderId);
-            };
+                window.payhere.onError = function onError(error) {
+                    console.log("Error:" + error);
+                    reject(error);
+                };
 
-            payhere.onDismissed = function onDismissed() {
-                console.log("Payment dismissed");
-                reject("Payment was dismissed");
-            };
-
-            payhere.onError = function onError(error) {
-                console.log("Error:" + error);
-                reject(error);
-            };
-            */
+                // Open PayHere UI
+                console.log('Triggering PayHere checkout modal...');
+                window.payhere.startPayment(payment);
+            } catch (error) {
+                console.error("Failed to initialize payment:", error);
+                reject("Failed to securely setup payment gateway.");
+            }
         });
     };
 
@@ -185,11 +165,13 @@ const CheckoutPage = () => {
             // Create order data with correct structure for backend
             const orderData = {
                 orderItems: cartItems.map(item => ({
-                    productId: item._id,
+                    productId: item._id, // Map standard logic
                     name: item.name,
                     price: item.price,
                     quantity: item.quantity,
-                    image: item.image
+                    image: item.image,
+                    size: item.size,
+                    color: item.color
                 })),
                 shippingAddress: {
                     firstName: shippingInfo.firstName,
@@ -210,23 +192,26 @@ const CheckoutPage = () => {
 
             console.log('Order data being sent:', orderData);
 
-            const config = {
+            const config = authToken ? {
                 headers: {
                     Authorization: `Bearer ${authToken}`,
                     'Content-Type': 'application/json'
                 },
+            } : {
+                headers: { 'Content-Type': 'application/json' }
             };
 
             // Save order to database
             console.log('Sending order to backend...');
-            const orderResponse = await axios.post('/api/orders', orderData, config);
+            const endpoint = authToken ? '/api/orders' : '/api/orders/guest';
+            const orderResponse = await axios.post(endpoint, orderData, config);
             console.log('Order created successfully:', orderResponse.data);
             const orderId = orderResponse.data._id;
 
             // Process payment
             try {
                 console.log('Processing payment...');
-                await processPayment();
+                await processPayment(orderId);
                 console.log('Payment processed successfully');
                 
                 // If payment successful, update order status (optional - can be handled by webhook)
@@ -234,7 +219,12 @@ const CheckoutPage = () => {
                 
                 // Clear cart
                 console.log('Clearing cart...');
-                await axios.delete('/api/users/cart', config); // Changed from /clear to match your route
+                if (authToken) {
+                    await axios.delete('/api/users/cart', config); // Changed from /clear to match your route
+                } else {
+                    localStorage.removeItem('guestCart');
+                    fetchCartItems();
+                }
                 console.log('Cart cleared successfully');
                 
                 // Redirect to success page
@@ -474,28 +464,44 @@ const CheckoutPage = () => {
                                             <div>
                                                 <p className="font-medium">{item.name}</p>
                                                 <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                                                {(item.size || item.color) && (
+                                                    <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+                                                        {item.color && (
+                                                            <div className="flex items-center gap-1">
+                                                                <span 
+                                                                    className="w-3 h-3 rounded-full border border-gray-300 inline-block" 
+                                                                    style={{ backgroundColor: getColorCode(item.color) }}
+                                                                    title={item.color}
+                                                                />
+                                                                {item.color}
+                                                            </div>
+                                                        )}
+                                                        {item.color && item.size && <span>/</span>}
+                                                        {item.size && <span>{item.size}</span>}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
-                                        <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                                        <p className="font-medium">{formatCurrency(item.price * item.quantity)}</p>
                                     </li>
                                 ))}
                             </ul>
                             <div className="border-t border-gray-200 pt-4 mt-4 space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <p>Subtotal</p>
-                                    <p>${subtotal.toFixed(2)}</p>
+                                    <p>{formatCurrency(subtotal)}</p>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <p>Shipping</p>
-                                    <p>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</p>
+                                    <p>{shipping === 0 ? 'Free' : formatCurrency(shipping)}</p>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <p>Tax</p>
-                                    <p>${tax.toFixed(2)}</p>
+                                    <p>{formatCurrency(tax)}</p>
                                 </div>
                                 <div className="flex justify-between text-base font-medium border-t pt-2">
                                     <p>Total</p>
-                                    <p>${total.toFixed(2)}</p>
+                                    <p>{formatCurrency(total)}</p>
                                 </div>
                             </div>
                             <button 

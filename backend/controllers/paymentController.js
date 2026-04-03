@@ -7,10 +7,10 @@ const Order = require('../models/Order');
 // @access  Private
 exports.generatePayHereHash = async (req, res) => {
     try {
-        const { merchant_id, order_id, amount, currency } = req.body;
+        const { order_id, amount, currency } = req.body;
         
+        const merchant_id = process.env.PAYHERE_MERCHANT_ID || '1231991';
         // Your PayHere merchant secret - GET THIS FROM PAYHERE DASHBOARD
-        // For sandbox, you can use a test secret or leave empty for testing
         const merchant_secret = process.env.PAYHERE_MERCHANT_SECRET || 'TEST_SECRET_FOR_SANDBOX';
         
         // Validate required fields
@@ -30,6 +30,7 @@ exports.generatePayHereHash = async (req, res) => {
         
         res.json({ 
             hash,
+            merchant_id,
             order_id,
             amount,
             currency 

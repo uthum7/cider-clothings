@@ -1,6 +1,6 @@
 // src/components/Header.js
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { ShoppingBag, User, Search, LogOut, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -39,6 +39,10 @@ const Header = () => {
     textUnderlineOffset: '4px'
   };
 
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const categoryParam = searchParams.get('category');
+  
   return (
     <header className="sticky top-0 z-30 bg-white bg-opacity-90 backdrop-blur-md shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -53,27 +57,27 @@ const Header = () => {
 
           {/* Main Navigation */}
           <nav className="hidden md:flex md:space-x-8">
-            <NavLink 
+            <Link 
               to="/products" 
               className="text-gray-700 hover:text-indigo-600 font-medium transition-colors"
-              style={({ isActive }) => isActive ? activeLinkStyle : undefined}
+              style={location.pathname === '/products' && !categoryParam ? activeLinkStyle : undefined}
             >
               Shop
-            </NavLink>
-            <NavLink 
+            </Link>
+            <Link 
               to="/products?category=men"
               className="text-gray-700 hover:text-indigo-600 font-medium transition-colors"
-              style={({ isActive }) => isActive ? activeLinkStyle : undefined}
+              style={location.pathname === '/products' && categoryParam === 'men' ? activeLinkStyle : undefined}
             >
               Men
-            </NavLink>
-            <NavLink 
+            </Link>
+            <Link 
               to="/products?category=women"
               className="text-gray-700 hover:text-indigo-600 font-medium transition-colors"
-              style={({ isActive }) => isActive ? activeLinkStyle : undefined}
+              style={location.pathname === '/products' && categoryParam === 'women' ? activeLinkStyle : undefined}
             >
               Women
-            </NavLink>
+            </Link>
           </nav>
 
           {/* Icon Navigation */}

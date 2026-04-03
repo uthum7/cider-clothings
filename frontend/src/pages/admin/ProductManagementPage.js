@@ -6,6 +6,7 @@ import { FiSearch, FiChevronDown } from 'react-icons/fi';
 // Remove: import axios from 'axios';
 import apiClient from '../../api/axiosConfig'; // <-- Import your configured axios instance
 import { useAuth } from '../../context/AuthContext';
+import { formatCurrency } from '../../utils/currencyFormatter';
 
 // ... (FilterSection component remains the same) ...
 
@@ -141,7 +142,7 @@ const ProductManagementPage = () => {
                       {product.stock} units
                     </span>
                   </td>
-                  <td className="px-6 py-4">${product.price.toFixed(2)}</td>
+                  <td className="px-6 py-4">{formatCurrency(product.price)}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${product.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                       {product.status}

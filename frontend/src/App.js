@@ -25,6 +25,11 @@ import WishlistPage from './pages/customer/WishlistPage';
 import ProductListPage from './pages/public/ProductListPage';
 import ProductDetailPage from './pages/public/ProductDetailPage';
 import CustomerSupportPage from './pages/support/CustomerSupportPage';
+import RefundPolicyPage from './pages/public/RefundPolicyPage';
+import PrivacyPolicyPage from './pages/public/PrivacyPolicyPage';
+import TermsConditionsPage from './pages/public/TermsConditionsPage';
+import FaqPage from './pages/public/FaqPage';
+import ContactUsPage from './pages/public/ContactUsPage';
 
 // --- CHECKOUT PROCESS PAGES ---
 import ShoppingCartPage from './pages/checkout/ShoppingCartPage';
@@ -54,6 +59,11 @@ function App() {
                 <Route path="products" element={<ProductListPage />} />
                 <Route path="products/:productId" element={<ProductDetailPage />} />
                 <Route path="support" element={<CustomerSupportPage />} />
+                <Route path="faq" element={<FaqPage />} />
+                <Route path="contact" element={<ContactUsPage />} />
+                <Route path="refund-policy" element={<RefundPolicyPage />} />
+                <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
+                <Route path="terms-conditions" element={<TermsConditionsPage />} />
                 <Route path="signin" element={<SignInPage />} />
                 <Route path="signup" element={<SignUpPage />} />
                 <Route path="forgot-password" element={<ForgotPasswordPage />} />
@@ -62,8 +72,8 @@ function App() {
                 <Route path="profile/update" element={<ProtectedRoute><UpdateProfilePage /></ProtectedRoute>} />
                 <Route path="orders" element={<ProtectedRoute><OrderHistoryPage /></ProtectedRoute>} />
                 <Route path="wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
-                <Route path="cart" element={<ProtectedRoute><ShoppingCartPage /></ProtectedRoute>} />
-                <Route path="checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
+                <Route path="cart" element={<ShoppingCartPage />} />
+                <Route path="checkout" element={<CheckoutPage />} />
                 <Route path="order-success" element={<ProtectedRoute><OrderSuccessPage /></ProtectedRoute>} />
                 {/* NEW ROUTE ADDED */}
               </Route>

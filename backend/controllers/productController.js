@@ -7,12 +7,24 @@ exports.getProducts = async (req, res) => {
   try {
     let query = { status: 'Active' };
     if (req.query.category) {
-      const category = await Category.findOne({ name: { $regex: req.query.category, $options: 'i' } });
+      const category = await Category.findOne({ name: { $regex: `^${req.query.category}$`, $options: 'i' } });
       if (category) {
         query.category = category._id;
       } else {
         return res.json([]); // Return empty if category not found
       }
+    }
+    
+    // Add Size Array searching
+    if (req.query.sizes) {
+      const sizesArray = req.query.sizes.split(',').map(s => new RegExp(`^${s.trim()}$`, 'i'));
+      query.sizes = { $in: sizesArray };
+    }
+
+    // Add Color Array searching
+    if (req.query.colors) {
+      const colorsArray = req.query.colors.split(',').map(c => new RegExp(`^${c.trim()}$`, 'i'));
+      query.colors = { $in: colorsArray };
     }
 
     const products = await Product.find(query)

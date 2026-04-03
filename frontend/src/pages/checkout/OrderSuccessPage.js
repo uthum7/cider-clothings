@@ -2,10 +2,13 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircleIcon, ShoppingBagIcon, PrinterIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../../context/AuthContext';
+import { formatCurrency } from '../../utils/currencyFormatter';
 
 const OrderSuccessPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { authToken } = useAuth();
     
     // Get order details from navigation state
     const orderDetails = location.state;
@@ -60,7 +63,7 @@ const OrderSuccessPage = () => {
                             </div>
                             <div className="text-right">
                                 <p className="text-2xl font-bold text-gray-900">
-                                    ${orderDetails.orderTotal?.toFixed(2) || '0.00'}
+                                    {formatCurrency(orderDetails.orderTotal)}
                                 </p>
                                 <p className="text-sm text-gray-600">Total Amount</p>
                             </div>
@@ -108,12 +111,21 @@ const OrderSuccessPage = () => {
 
                         {/* Action Buttons */}
                         <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                            <Link
-                                to="/orders"
-                                className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-md hover:bg-indigo-700 transition-colors duration-200 text-center font-medium"
-                            >
-                                View Order History
-                            </Link>
+                            {authToken ? (
+                                <Link
+                                    to="/orders"
+                                    className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-md hover:bg-indigo-700 transition-colors duration-200 text-center font-medium"
+                                >
+                                    View Order History
+                                </Link>
+                            ) : (
+                                <Link
+                                    to="/signup"
+                                    className="flex-1 bg-green-600 text-white py-3 px-6 rounded-md hover:bg-green-700 transition-colors duration-200 text-center font-medium"
+                                >
+                                    Create An Account to Track Your Order
+                                </Link>
+                            )}
                             <button
                                 onClick={handlePrint}
                                 className="flex-1 bg-white border border-gray-300 text-gray-700 py-3 px-6 rounded-md hover:bg-gray-50 transition-colors duration-200 font-medium flex items-center justify-center gap-2"

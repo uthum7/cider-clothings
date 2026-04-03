@@ -5,6 +5,7 @@ import { ArrowLeft, UploadCloud, Tag, DollarSign, Package } from 'lucide-react';
 // import axios from 'axios'; // Remove this import
 import apiClient from '../../api/axiosConfig'; // <-- Import your configured axios instance
 import { useAuth } from '../../context/AuthContext';
+import { getColorCode } from '../../utils/colorHelper';
 
 const AddNewProductPage = () => {
     // State variables for form inputs
@@ -13,6 +14,8 @@ const AddNewProductPage = () => {
     const [price, setPrice] = useState('');
     const [stock, setStock] = useState('');
     const [category, setCategory] = useState(''); // To store the selected category ID
+    const [sizes, setSizes] = useState('');
+    const [colors, setColors] = useState('');
     const [status, setStatus] = useState('Active');
     const [images, setImages] = useState([]); // To hold the actual file objects
     const [previewImages, setPreviewImages] = useState([]); // For displaying image previews
@@ -92,6 +95,8 @@ const AddNewProductPage = () => {
         formData.append('price', price);
         formData.append('stock', stock);
         formData.append('category', category); // Sending the selected category ID
+        formData.append('sizes', sizes);
+        formData.append('colors', colors);
         formData.append('status', status);
 
         images.forEach(image => {
@@ -239,6 +244,34 @@ const AddNewProductPage = () => {
                         </select>
                         {/* Display error if category fetching failed */}
                         {categoryError && <p className="text-xs text-red-500 mt-1">{categoryError}</p>}
+                    </div>
+                     <div>
+                        <label htmlFor="sizes" className="block text-sm font-medium text-gray-700">Available Sizes (comma-separated)</label>
+                        <input
+                            type="text" id="sizes" className="mt-1 w-full border rounded-md p-2 focus:ring-indigo-500" placeholder="e.g. S, M, L, XL"
+                            value={sizes} onChange={(e) => setSizes(e.target.value)}
+                        />
+                    </div>
+                     <div>
+                        <label htmlFor="colors" className="block text-sm font-medium text-gray-700">Available Colors (comma-separated)</label>
+                        <input
+                            type="text" id="colors" className="mt-1 w-full border rounded-md p-2 focus:ring-indigo-500" placeholder="e.g. Red, Blue, Green"
+                            value={colors} onChange={(e) => setColors(e.target.value)}
+                        />
+                        {colors && (
+                            <div className="mt-3 flex flex-wrap gap-3">
+                                {colors.split(',').map(c => c.trim()).filter(Boolean).map((color, index) => (
+                                    <div key={index} className="flex flex-col items-center gap-1 group">
+                                        <div 
+                                            className="w-8 h-8 rounded-full border border-gray-300 shadow-sm transition-transform group-hover:scale-110"
+                                            style={{ backgroundColor: getColorCode(color) }}
+                                            title={color}
+                                        />
+                                        <span className="text-[10px] text-gray-500 truncate max-w-[60px]">{color}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                      <div>
                         <label className="block text-sm font-medium text-gray-700">Product Status</label>

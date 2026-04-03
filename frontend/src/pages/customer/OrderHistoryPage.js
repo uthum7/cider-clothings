@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext'; // Adjust path as needed
+import { formatCurrency } from '../../utils/currencyFormatter';
 
 const OrderHistoryPage = () => {
     const [orders, setOrders] = useState([]);
@@ -182,7 +183,7 @@ const OrderHistoryPage = () => {
                                         <div>
                                             <dt className="font-medium text-gray-900">Total amount</dt>
                                             <dd className="mt-1 font-medium text-gray-900">
-                                                ${order.totalPrice?.toFixed(2) || '0.00'}
+                                                {formatCurrency(order.totalPrice)}
                                             </dd>
                                         </div>
                                         <div>
@@ -237,10 +238,10 @@ const OrderHistoryPage = () => {
                                                     <div className="ml-4 flex-1">
                                                         <p className="font-medium text-gray-900">{item.name}</p>
                                                         <p className="text-gray-500">
-                                                            ${item.price?.toFixed(2)} x {item.quantity}
+                                                            {formatCurrency(item.price)} x {item.quantity}
                                                         </p>
                                                         <p className="text-sm font-medium text-gray-900">
-                                                            Subtotal: ${(item.price * item.quantity)?.toFixed(2)}
+                                                            Subtotal: {formatCurrency(item.price * item.quantity)}
                                                         </p>
                                                     </div>
                                                     <Link 
@@ -258,19 +259,19 @@ const OrderHistoryPage = () => {
                                             <div className="space-y-2 text-sm">
                                                 <div className="flex justify-between">
                                                     <span>Items Price:</span>
-                                                    <span>${order.itemsPrice?.toFixed(2) || '0.00'}</span>
+                                                    <span>{formatCurrency(order.itemsPrice)}</span>
                                                 </div>
                                                 <div className="flex justify-between">
                                                     <span>Shipping:</span>
-                                                    <span>${order.shippingPrice?.toFixed(2) || '0.00'}</span>
+                                                    <span>{formatCurrency(order.shippingPrice)}</span>
                                                 </div>
                                                 <div className="flex justify-between">
                                                     <span>Tax:</span>
-                                                    <span>${order.taxPrice?.toFixed(2) || '0.00'}</span>
+                                                    <span>{formatCurrency(order.taxPrice)}</span>
                                                 </div>
                                                 <div className="flex justify-between font-semibold text-base border-t pt-2">
                                                     <span>Total:</span>
-                                                    <span>${order.totalPrice?.toFixed(2) || '0.00'}</span>
+                                                    <span>{formatCurrency(order.totalPrice)}</span>
                                                 </div>
                                             </div>
                                         </div>

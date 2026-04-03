@@ -4,164 +4,43 @@ import { Link, useLocation } from 'react-router-dom';
 import { FiTrash2, FiArrowRight } from 'react-icons/fi';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
+import { formatCurrency } from '../../utils/currencyFormatter';
+import { getColorCode } from '../../utils/colorHelper';
 
 const ShoppingCartPage = () => {
-    const [cartItems, setCartItems] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { cartItems, loading, removeFromCart, updateCartItemQuantity, fetchCartItems } = useCart();
     const [error, setError] = useState('');
     const [updating, setUpdating] = useState(false);
 
     const { authToken } = useAuth();
     const location = useLocation();
 
-    // Function to fetch cart items
-    const fetchCart = async () => {
-        setLoading(true);
-        setError('');
-        try {
-            if (!authToken) {
-                setError("Authentication token not found. Please sign in.");
-                setLoading(false);
-                return;
-            }
-
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${authToken}`,
-                },
-            };
-
-            console.log("Fetching cart with config:", config);
-            const response = await axios.get('/api/users/cart', config);
-            console.log("Fetched cart response:", response.data);
-            
-            // Ensure response.data is an array
-            if (Array.isArray(response.data)) {
-                setCartItems(response.data);
-            } else {
-                console.error("Expected array but got:", typeof response.data);
-                setCartItems([]);
-            }
-
-        } catch (err) {
-            console.error("Fetch Cart API Error:", err);
-            let errorMessage = 'Failed to fetch cart.';
-            
-            if (err.response) {
-                console.error("Error response:", err.response);
-                if (err.response.data && err.response.data.message) {
-                    errorMessage = err.response.data.message;
-                } else if (err.response.status === 401) {
-                    errorMessage = 'Please sign in to view your cart.';
-                }
-            } else if (err.message) {
-                errorMessage = err.message;
-            }
-            
-            setError(errorMessage);
-            setCartItems([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Fetch cart items when component mounts, authToken changes, or when navigating to this page
     useEffect(() => {
-        if (authToken) {
-            fetchCart();
-        } else {
-            setLoading(false);
-            setError("Please sign in to view your cart.");
-        }
+        fetchCartItems();
     }, [authToken, location.pathname]);
 
-    // Handle quantity change
     const handleQuantityChange = async (productId, newQuantity) => {
         if (newQuantity < 1) return;
-        
         setUpdating(true);
         try {
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${authToken}`,
-                },
-            };
-
-            console.log("Updating quantity:", { productId, newQuantity });
-            
-            // Make API call to update quantity
-            const response = await axios.put(
-                `/api/users/cart/${productId}`, 
-                { quantity: newQuantity }, 
-                config
-            );
-
-            console.log("Update quantity response:", response.data);
-
-            // Update local state after successful API call
-            setCartItems(prevItems =>
-                prevItems.map(item =>
-                    item._id === productId 
-                        ? { ...item, quantity: newQuantity } 
-                        : item
-                )
-            );
-
+            await updateCartItemQuantity(productId, newQuantity);
         } catch (err) {
-            console.error("Update Cart Quantity API Error:", err);
-            let errorMessage = 'Failed to update quantity.';
-            if (err.response && err.response.data && err.response.data.message) {
-                errorMessage = err.response.data.message;
-            }
-            setError(errorMessage);
-            
-            // Optionally refresh cart on error to sync with server
-            setTimeout(() => {
-                fetchCart();
-                setError('');
-            }, 2000);
+            setError(err.message || 'Failed to update quantity');
+            setTimeout(() => setError(''), 2000);
         } finally {
             setUpdating(false);
         }
     };
 
-    // Handle removing an item from the cart
     const handleRemoveItem = async (productId) => {
-        if (!window.confirm('Are you sure you want to remove this item from your cart?')) {
-            return;
-        }
-
+        if (!window.confirm('Are you sure you want to remove this item from your cart?')) return;
         setUpdating(true);
         try {
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${authToken}`,
-                },
-            };
-
-            console.log("Removing item:", productId);
-            
-            const response = await axios.delete(`/api/users/cart/${productId}`, config);
-            console.log("Remove item response:", response.data);
-
-            // Update local state
-            setCartItems(prevItems => 
-                prevItems.filter(item => item._id !== productId)
-            );
-
+            await removeFromCart(productId);
         } catch (err) {
-            console.error("Remove from Cart API Error:", err);
-            let errorMessage = 'Failed to remove item from cart.';
-            if (err.response && err.response.data && err.response.data.message) {
-                errorMessage = err.response.data.message;
-            }
-            setError(errorMessage);
-            
-            // Optionally refresh cart on error to sync with server
-            setTimeout(() => {
-                fetchCart();
-                setError('');
-            }, 2000);
+            setError(err.message || 'Failed to remove item');
+            setTimeout(() => setError(''), 2000);
         } finally {
             setUpdating(false);
         }
@@ -214,14 +93,12 @@ const ShoppingCartPage = () => {
                                 </div>
                             </div>
                         )}
-                        {authToken && (
                             <button 
-                                onClick={fetchCart}
+                                onClick={fetchCartItems}
                                 className="bg-indigo-600 text-white py-2 px-6 rounded-md hover:bg-indigo-700"
                             >
                                 Retry
                             </button>
-                        )}
                     </div>
                 </div>
             </div>
@@ -281,14 +158,23 @@ const ShoppingCartPage = () => {
                                                     </p>
                                                 )}
                                                 {(item.size || item.color) && (
-                                                    <p className="mt-1 text-sm text-gray-500">
-                                                        {item.color && `${item.color}`}
-                                                        {item.color && item.size && ` / `}
-                                                        {item.size}
-                                                    </p>
+                                                    <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
+                                                        {item.color && (
+                                                            <div className="flex items-center gap-1">
+                                                                <span 
+                                                                    className="w-3 h-3 rounded-full border border-gray-300 inline-block" 
+                                                                    style={{ backgroundColor: getColorCode(item.color) }}
+                                                                    title={item.color}
+                                                                />
+                                                                {item.color}
+                                                            </div>
+                                                        )}
+                                                        {item.color && item.size && <span>/</span>}
+                                                        {item.size && <span>{item.size}</span>}
+                                                    </div>
                                                 )}
                                                 <p className="mt-1 text-base font-medium text-gray-900">
-                                                    ${(item.price || 0).toFixed(2)}
+                                                    {formatCurrency(item.price)}
                                                 </p>
                                             </div>
                                             <div className="flex-1 flex items-end justify-between text-sm">
@@ -332,28 +218,28 @@ const ShoppingCartPage = () => {
                             <div className="mt-6 space-y-4">
                                 <div className="flex items-center justify-between">
                                     <p className="text-sm text-gray-600">Subtotal</p>
-                                    <p className="text-sm font-medium text-gray-900">${subtotal.toFixed(2)}</p>
+                                    <p className="text-sm font-medium text-gray-900">{formatCurrency(subtotal)}</p>
                                 </div>
                                 <div className="border-t border-gray-200 pt-4 flex items-center justify-between">
                                     <p className="text-sm text-gray-600">Shipping estimate</p>
                                     <p className="text-sm font-medium text-gray-900">
-                                        {subtotal > 50 ? 'Free' : `$${shipping.toFixed(2)}`}
+                                        {subtotal > 50 ? 'Free' : formatCurrency(shipping)}
                                     </p>
                                 </div>
                                 <div className="border-t border-gray-200 pt-4 flex items-center justify-between">
                                     <p className="text-sm text-gray-600">Tax estimate</p>
-                                    <p className="text-sm font-medium text-gray-900">${tax.toFixed(2)}</p>
+                                    <p className="text-sm font-medium text-gray-900">{formatCurrency(tax)}</p>
                                 </div>
                                 <div className="border-t border-gray-200 pt-4 flex items-center justify-between text-base font-medium text-gray-900">
                                     <p>Order total</p>
-                                    <p>${total.toFixed(2)}</p>
+                                    <p>{formatCurrency(total)}</p>
                                 </div>
                             </div>
                             
                             {subtotal <= 50 && (
                                 <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-md p-3">
                                     <p className="text-sm text-yellow-700">
-                                        Add ${(50 - subtotal).toFixed(2)} more to get free shipping!
+                                        Add {formatCurrency(50 - subtotal)} more to get free shipping!
                                     </p>
                                 </div>
                             )}

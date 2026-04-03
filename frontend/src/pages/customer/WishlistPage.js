@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { FiShoppingCart, FiX } from 'react-icons/fi'; // Icons for cart and remove
 import axios from 'axios'; // Import axios for API calls
 import { useAuth } from '../../context/AuthContext'; // Import useAuth for token
+import { formatCurrency } from '../../utils/currencyFormatter';
 
 const WishlistPage = () => {
     // State for wishlist items, loading, and error
@@ -171,7 +172,7 @@ const WishlistPage = () => {
                                     </div>
                                     <div className="p-4">
                                         <h3 className="text-sm text-gray-700">{item.name}</h3>
-                                        <p className="mt-1 text-lg font-medium text-gray-900">${item.price.toFixed(2)}</p>
+                                        <p className="mt-1 text-lg font-medium text-gray-900">{formatCurrency(item.price)}</p>
                                     </div>
                                 </Link>
                                 <div className="p-4 border-t">

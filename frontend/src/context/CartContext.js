@@ -25,14 +25,18 @@ export const CartProvider = ({ children }) => {
       fetchCartItems();
       fetchWishlistItems();
     } else {
-      // Clear cart and wishlist when user logs out
-      setCartItems([]);
+      // Load guest cart
+      fetchCartItems();
       setWishlistItems([]);
     }
   }, [isLoggedIn, authToken]);
 
   const fetchCartItems = async () => {
-    if (!authToken) return;
+    if (!authToken) {
+      const guestCart = JSON.parse(localStorage.getItem('guestCart')) || [];
+      setCartItems(guestCart);
+      return;
+    }
     
     try {
       setLoading(true);
@@ -62,15 +66,35 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const addToCart = async (productId, quantity = 1) => {
+  const addToCart = async (productId, quantity = 1, product = null, size = null, color = null) => {
     if (!authToken) {
-      throw new Error('Please sign in to add items to cart');
+      const guestCart = JSON.parse(localStorage.getItem('guestCart')) || [];
+      const itemIndex = guestCart.findIndex(item => item.productId === productId && item.size === size && item.color === color);
+      if (itemIndex > -1) {
+        guestCart[itemIndex].quantity += quantity;
+      } else {
+        guestCart.push({
+          _id: productId + (size ? `-${size}` : '') + (color ? `-${color}` : ''), // Safe frontend key
+          productId: productId,
+          name: product?.name || 'Item',
+          price: product?.price || 0,
+          image: product?.images?.[0] || '',
+          quantity: quantity,
+          size: size,
+          color: color
+        });
+      }
+      localStorage.setItem('guestCart', JSON.stringify(guestCart));
+      setCartItems([...guestCart]);
+      return guestCart;
     }
 
     try {
       const response = await axios.post('/api/users/cart', {
         productId,
-        quantity
+        quantity,
+        size,
+        color
       }, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
@@ -106,7 +130,13 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = async (itemId) => {
-    if (!authToken) return;
+    if (!authToken) {
+      let guestCart = JSON.parse(localStorage.getItem('guestCart')) || [];
+      guestCart = guestCart.filter(item => item._id !== itemId);
+      localStorage.setItem('guestCart', JSON.stringify(guestCart));
+      setCartItems(guestCart);
+      return;
+    }
     
     try {
       await axios.delete(`/api/users/cart/${itemId}`, {
@@ -134,7 +164,13 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateCartItemQuantity = async (itemId, quantity) => {
-    if (!authToken) return;
+    if (!authToken) {
+      let guestCart = JSON.parse(localStorage.getItem('guestCart')) || [];
+      guestCart = guestCart.map(item => item._id === itemId ? { ...item, quantity } : item);
+      localStorage.setItem('guestCart', JSON.stringify(guestCart));
+      setCartItems(guestCart);
+      return;
+    }
     
     try {
       await axios.patch(`/api/users/cart/${itemId}`, {

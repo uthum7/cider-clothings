@@ -17,13 +17,16 @@ const orderSchema = mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: false, // Optional for guest checkouts
   },
   orderItems: [orderItemSchema],
   shippingAddress: {
+    firstName: { type: String },
+    lastName: { type: String },
+    phone: { type: String },
     address: { type: String, required: true },
     city: { type: String, required: true },
-    state: { type: String, required: true },
+    state: { type: String, required: false }, // Made optional
     zipCode: { type: String, required: true },
     country: { type: String, required: true },
   },

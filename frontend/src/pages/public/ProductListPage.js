@@ -1,8 +1,9 @@
 // src/pages/public/ProductListPage.js
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { FiSearch, FiChevronDown, FiStar } from 'react-icons/fi';
 import axios from 'axios';
+import { formatCurrency } from '../../utils/currencyFormatter';
 
 const FilterSection = ({ title, options, onFilterChange }) => {
     const [selected, setSelected] = useState([]);
@@ -44,15 +45,24 @@ const ProductListPage = () => {
     const [filterLoading, setFilterLoading] = useState(false); // Separate loading for filters
     const [error, setError] = useState('');
     const [availableCategories, setAvailableCategories] = useState([]);
-    const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('');
+    const [filterState, setFilterState] = useState({ category: [], size: [], color: [] });
+    const location = useLocation();
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             setError('');
             try {
+                // Get category from URL
+                const searchParams = new URLSearchParams(location.search);
+                const categoryFromUrl = searchParams.get('category');
+                
                 // Fetch products
-                const productsResponse = await axios.get('/api/products');
+                let url = '/api/products';
+                if (categoryFromUrl) {
+                    url += `?category=${encodeURIComponent(categoryFromUrl)}`;
+                }
+                const productsResponse = await axios.get(url);
                 setProducts(productsResponse.data);
 
                 // Fetch categories for filters
@@ -79,35 +89,43 @@ const ProductListPage = () => {
         };
 
         fetchData();
-    }, []);
+    }, [location.search]);
 
     const handleFilterChange = async (filterType, values) => {
-        if (filterType === 'category') {
-            const selectedCategoryName = values.length > 0 ? values[0] : '';
-            setSelectedCategoryFilter(selectedCategoryName);
+        const newFilterState = { ...filterState, [filterType]: values };
+        setFilterState(newFilterState);
 
-            try {
-                setFilterLoading(true); // Show filter loading state
-                let url = '/api/products';
-                if (selectedCategoryName) {
-                    url += `?category=${encodeURIComponent(selectedCategoryName)}`;
-                }
-                const response = await axios.get(url);
-                setProducts(response.data);
-                setError(''); // Clear any previous errors
-            } catch (err) {
-                console.error(`Error fetching products filtered by ${selectedCategoryName}:`, err);
-                let errorMessage = `Failed to filter products.`;
-                if (err.response && err.response.data && err.response.data.message) {
-                    errorMessage = err.response.data.message;
-                } else if (err.message) {
-                    errorMessage = err.message;
-                }
-                setError(errorMessage);
-                setProducts([]);
-            } finally {
-                setFilterLoading(false);
+        try {
+            setFilterLoading(true);
+            const params = new URLSearchParams();
+            
+            if (newFilterState.category.length > 0) {
+                params.append('category', newFilterState.category[0]); 
+            } else {
+                 const searchParams = new URLSearchParams(location.search);
+                 const categoryFromUrl = searchParams.get('category');
+                 if(categoryFromUrl) params.append('category', categoryFromUrl);
             }
+            
+            if (newFilterState.size.length > 0) params.append('sizes', newFilterState.size.join(','));
+            if (newFilterState.color.length > 0) params.append('colors', newFilterState.color.join(','));
+
+            const url = `/api/products?${params.toString()}`;
+            const response = await axios.get(url);
+            setProducts(response.data);
+            setError(''); 
+        } catch (err) {
+            console.error(`Error fetching filtered products:`, err);
+            let errorMessage = `Failed to filter products.`;
+            if (err.response && err.response.data && err.response.data.message) {
+                errorMessage = err.response.data.message;
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+            setError(errorMessage);
+            setProducts([]);
+        } finally {
+            setFilterLoading(false);
         }
     };
 
@@ -152,8 +170,8 @@ const ProductListPage = () => {
                         <h2 className="text-lg font-medium text-gray-900">Filters</h2>
                         <div className="mt-4">
                             <FilterSection title="Category" options={availableCategories} onFilterChange={handleFilterChange} />
-                            <FilterSection title="Size" options={['XS', 'S', 'M', 'L', 'XL']} />
-                            <FilterSection title="Color" options={['Black', 'White', 'Blue', 'Red']} />
+                            <FilterSection title="Size" options={['XS', 'S', 'M', 'L', 'XL', 'XXL']} onFilterChange={handleFilterChange} />
+                            <FilterSection title="Color" options={['Black', 'White', 'Navy', 'Beige', 'Olive Green']} onFilterChange={handleFilterChange} />
                         </div>
                     </aside>
 
@@ -203,7 +221,7 @@ const ProductListPage = () => {
                                                )}
                                             </div>
                                             <p className="mt-1 text-lg font-medium text-gray-900">
-                                                LKR {product.price?.toLocaleString()}
+                                                {formatCurrency(product.price)}
                                             </p>
                                             {product.category && (
                                                 <p className="text-xs text-gray-500 mt-1">

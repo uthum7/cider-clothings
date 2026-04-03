@@ -6,6 +6,8 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
+import { formatCurrency } from '../../utils/currencyFormatter';
+import { getColorCode } from '../../utils/colorHelper';
 
 const ProductDetailPage = () => {
     const { productId } = useParams();
@@ -97,15 +99,11 @@ const ProductDetailPage = () => {
             return;
         }
 
-        if (!authToken) {
-            showWarning("Please sign in to add items to your cart.");
-            navigate('/signin');
-            return;
-        }
+        // Handled securely by CartContext depending on whether authToken exists!
 
         try {
             setAddingToCart(true);
-            await addToCart(product._id, quantity);
+            await addToCart(product._id, quantity, product, selectedSize, selectedColor);
             
             showSuccess(
                 `${quantity} x ${product.name} added to your cart!`, 
@@ -222,7 +220,7 @@ const ProductDetailPage = () => {
                     {/* Product info */}
                     <div>
                         <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">{product.name}</h1>
-                        <p className="text-3xl text-gray-900 mt-2">LKR {product.price?.toLocaleString()}</p>
+                        <p className="text-3xl text-gray-900 mt-2">{formatCurrency(product.price)}</p>
 
                         <div className="mt-4 flex items-center">
                             <div className="flex items-center">
@@ -261,10 +259,11 @@ const ProductDetailPage = () => {
                                             <button
                                                 key={color}
                                                 onClick={() => setSelectedColor(color)}
-                                                className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors ${selectedColor === color ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-900 border-gray-300 hover:bg-gray-50'}`}
-                                            >
-                                                {color}
-                                            </button>
+                                                className={`w-9 h-9 rounded-full border focus:outline-none focus:ring-2 focus:ring-offset-2 transition-transform ${selectedColor === color ? 'border-gray-900 ring-gray-900 scale-110 shadow-md ring-offset-1' : 'border-gray-300 ring-transparent hover:scale-105'}`}
+                                                style={{ backgroundColor: getColorCode(color) }}
+                                                title={color}
+                                                aria-label={`Select color ${color}`}
+                                            />
                                         ))}
                                     </div>
                                 </div>

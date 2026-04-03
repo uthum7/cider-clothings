@@ -1,9 +1,10 @@
 // src/pages/admin/EditProductPage.js
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, UploadCloud, DollarSign, Package } from 'lucide-react'; // Note: Edit and Tag are not used in this form layout
+import { ArrowLeft, UploadCloud, DollarSign, Package } from 'lucide-react';
 import axios from 'axios'; // Import axios
 import { useAuth } from '../../context/AuthContext'; // To get the token
+import { getColorCode } from '../../utils/colorHelper';
 
 const EditProductPage = () => {
     const { productId } = useParams(); // Get the ID from the URL
@@ -16,6 +17,8 @@ const EditProductPage = () => {
     const [price, setPrice] = useState('');
     const [stock, setStock] = useState('');
     const [category, setCategory] = useState('');
+    const [sizes, setSizes] = useState('');
+    const [colors, setColors] = useState('');
     const [status, setStatus] = useState('Active');
     const [images, setImages] = useState([]); // For new images
     const [previewImages, setPreviewImages] = useState([]); // For image previews
@@ -84,6 +87,8 @@ const EditProductPage = () => {
                 setPrice(fetchedProduct.price.toFixed(2)); // Format price
                 setStock(fetchedProduct.stock);
                 setCategory(fetchedProduct.category._id); // Set category ID
+                setSizes(fetchedProduct.sizes?.join(', ') || '');
+                setColors(fetchedProduct.colors?.join(', ') || '');
                 setStatus(fetchedProduct.status);
                 setCurrentImages(fetchedProduct.images || []); // Set current images
 
@@ -141,6 +146,8 @@ const EditProductPage = () => {
         formData.append('price', price);
         formData.append('stock', stock);
         formData.append('category', category); // Sending the selected category ID
+        formData.append('sizes', sizes);
+        formData.append('colors', colors);
         formData.append('status', status);
 
         // Append new images if any were selected
@@ -297,6 +304,34 @@ const EditProductPage = () => {
                         {categoryError && <p className="text-xs text-red-500 mt-1">{categoryError}</p>}
                     </div>
                      <div>
+                        <label htmlFor="sizes" className="block text-sm font-medium text-gray-700">Available Sizes (comma-separated)</label>
+                        <input
+                            type="text" id="sizes" className="mt-1 w-full border rounded-md p-2"
+                            value={sizes} onChange={(e) => setSizes(e.target.value)}
+                        />
+                    </div>
+                     <div>
+                        <label htmlFor="colors" className="block text-sm font-medium text-gray-700">Available Colors (comma-separated)</label>
+                        <input
+                            type="text" id="colors" className="mt-1 w-full border rounded-md p-2"
+                            value={colors} onChange={(e) => setColors(e.target.value)}
+                        />
+                        {colors && (
+                            <div className="mt-3 flex flex-wrap gap-3">
+                                {colors.split(',').map(c => c.trim()).filter(Boolean).map((color, index) => (
+                                    <div key={index} className="flex flex-col items-center gap-1 group">
+                                        <div 
+                                            className="w-8 h-8 rounded-full border border-gray-300 shadow-sm transition-transform group-hover:scale-110"
+                                            style={{ backgroundColor: getColorCode(color) }}
+                                            title={color}
+                                        />
+                                        <span className="text-[10px] text-gray-500 truncate max-w-[60px]">{color}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                     <div>
                         <label className="block text-sm font-medium text-gray-700">Product Status</label>
                         <div className="mt-2 space-y-2">
                            <label className="flex items-center">
@@ -327,8 +362,8 @@ const EditProductPage = () => {
                 <button
                     type="submit"
                     className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-                    // Disable button if essential fields are empty, no images selected, or category fetch failed
-                    disabled={!productName || !price || !stock || !category || images.length === 0 || availableCategories.length === 0}
+                    // Disable button if essential fields are empty, or category fetch failed
+                    disabled={!productName || !price || !stock || !category || availableCategories.length === 0}
                 >
                     Save Changes
                 </button>

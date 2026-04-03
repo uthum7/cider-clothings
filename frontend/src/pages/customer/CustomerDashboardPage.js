@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 // Import the icons we will use
 import { FiUser, FiBox, FiHeart, FiShoppingCart, FiMessageSquare, FiLogOut, FiArrowRight } from 'react-icons/fi';
+import { formatCurrency } from '../../utils/currencyFormatter';
 
 const CustomerDashboardPage = () => {
     const { user, logout } = useAuth();
@@ -88,7 +89,7 @@ const CustomerDashboardPage = () => {
                                 </div>
                                 <div className="p-4">
                                     <h3 className="font-semibold text-gray-800 truncate">{product.name}</h3>
-                                    <p className="text-lg font-bold text-indigo-600 mt-1">${product.price}</p>
+                                    <p className="text-lg font-bold text-indigo-600 mt-1">{formatCurrency(product.price)}</p>
                                 </div>
                             </Link>
                         ))}

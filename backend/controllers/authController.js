@@ -34,7 +34,7 @@ exports.signup = async (req, res) => {
       name,
       email,
       password,
-      role: 'Customer', // Default role
+      role: 'customer', // Default role
     });
 
     // --- Optional: Send Welcome Email ---
