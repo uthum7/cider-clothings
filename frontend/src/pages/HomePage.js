@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../api/axiosConfig';
 import { formatCurrency } from '../utils/currencyFormatter';
 
 const HomePage = () => {
@@ -30,7 +30,7 @@ const HomePage = () => {
 
   const fetchHomepageData = async () => {
     try {
-      const response = await axios.get('/api/settings/homepage');
+      const response = await apiClient.get('/api/settings/homepage');
       setHomepageData(response.data);
     } catch (error) {
       console.error('Error fetching homepage data:', error);
