@@ -6,26 +6,18 @@ const Footer = () => {
   return (
     <footer className="bg-gray-800 text-white">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div className="col-span-2 md:col-span-1">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
             <h3 className="text-lg font-semibold tracking-wider uppercase">Cider Clothing</h3>
             <p className="mt-4 text-gray-400 text-sm">
-              Representing down south with swag clothing that defines your style. Unique designs for everyone.
+              Represent the South Side with unapologetic swag,<br />
+              Clothing that speaks your style, not trends.<br />
+              Built different. Worn by everyone.
             </p>
           </div>
           <div>
-            <h4 className="font-semibold tracking-wider uppercase">Shop</h4>
+            <h4 className="font-semibold tracking-wider uppercase">Customer Care</h4>
             <ul className="mt-4 space-y-2 text-sm">
-              <li><Link to="/men" className="text-gray-400 hover:text-white">Men</Link></li>
-              <li><Link to="/women" className="text-gray-400 hover:text-white">Women</Link></li>
-              <li><Link to="/collections" className="text-gray-400 hover:text-white">Collections</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold tracking-wider uppercase">Support</h4>
-            <ul className="mt-4 space-y-2 text-sm">
-              <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact Us</Link></li>
-              <li><Link to="/faq" className="text-gray-400 hover:text-white">FAQ</Link></li>
               <li><Link to="/refund-policy" className="text-gray-400 hover:text-white">Refund Policy</Link></li>
               <li><Link to="/privacy-policy" className="text-gray-400 hover:text-white">Privacy Policy</Link></li>
               <li><Link to="/terms-conditions" className="text-gray-400 hover:text-white">Terms & Conditions</Link></li>
