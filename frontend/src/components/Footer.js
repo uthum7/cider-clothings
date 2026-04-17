@@ -10,7 +10,7 @@ const Footer = () => {
           <div className="col-span-2 md:col-span-1">
             <h3 className="text-lg font-semibold tracking-wider uppercase">Cider Clothing</h3>
             <p className="mt-4 text-gray-400 text-sm">
-              Represent the South Side with unapologetic swag,<br />
+              Represent the South with unapologetic swag.<br />
               Clothing that speaks your style, not trends.<br />
               Built different. Worn by everyone.
             </p>
