@@ -52,7 +52,7 @@ const Header = () => {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center h-full">
             <Link to="/" className="flex items-center">
-              <img src={logoImg} alt="Cider Clothing" className="h-12 w-auto scale-[1.4] origin-left object-contain mix-blend-multiply" />
+              <img src={logoImg} alt="Cider Clothing" className="h-16 w-auto scale-[2.5] origin-left object-contain mix-blend-multiply" />
             </Link>
           </div>
 
