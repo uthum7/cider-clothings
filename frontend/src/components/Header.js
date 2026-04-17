@@ -50,9 +50,9 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           
           {/* Logo */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 flex items-center h-full">
             <Link to="/" className="flex items-center">
-              <img src={logoImg} alt="Cider Clothing" className="h-10 w-auto object-contain mix-blend-multiply" />
+              <img src={logoImg} alt="Cider Clothing" className="h-12 w-auto scale-[1.4] origin-left object-contain mix-blend-multiply" />
             </Link>
           </div>
 
