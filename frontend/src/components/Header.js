@@ -1,9 +1,10 @@
 // src/components/Header.js
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { ShoppingBag, User, Search, LogOut, Heart } from 'lucide-react';
+import { ShoppingBag, User, Sliders, LogOut, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import logoImg from '../assets/cider.clo.wb.png';
 
 const Header = () => {
   const { isLoggedIn, logout, user } = useAuth();
@@ -50,8 +51,8 @@ const Header = () => {
           
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link to="/" className="text-2xl font-bold text-gray-800">
-              Cider
+            <Link to="/" className="flex items-center">
+              <img src={logoImg} alt="Cider Clothing" className="h-10 w-auto object-contain mix-blend-multiply" />
             </Link>
           </div>
 
@@ -62,7 +63,7 @@ const Header = () => {
               className="text-gray-700 hover:text-indigo-600 font-medium transition-colors"
               style={location.pathname === '/products' && !categoryParam ? activeLinkStyle : undefined}
             >
-              Shop
+              Unisex
             </Link>
             <Link 
               to="/products?category=men"
@@ -82,8 +83,8 @@ const Header = () => {
 
           {/* Icon Navigation */}
           <div className="flex items-center space-x-4">
-            <button className="text-gray-600 hover:text-indigo-600 transition-colors" aria-label="Search">
-              <Search size={22} />
+            <button className="text-gray-600 hover:text-indigo-600 transition-colors" aria-label="Sort">
+              <Sliders size={22} />
             </button>
 
             {isLoggedIn ? (
