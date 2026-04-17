@@ -83,9 +83,6 @@ const Header = () => {
 
           {/* Icon Navigation */}
           <div className="flex items-center space-x-4">
-            <button className="text-gray-600 hover:text-indigo-600 transition-colors" aria-label="Sort">
-              <Sliders size={22} />
-            </button>
 
             {isLoggedIn ? (
               <>
