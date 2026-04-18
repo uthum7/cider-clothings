@@ -187,7 +187,7 @@ exports.removeFromWishlist = async (req, res) => {
     console.log(`removeFromWishlist: User found. Current wishlist length: ${user.wishlist.length}`);
 
     const initialLength = user.wishlist.length;
-    user.wishlist = user.wishlist.filter(id => id.toString() !== productId.toString());
+    user.wishlist = user.wishlist.filter(id => id && id.toString() !== productId.toString());
 
     if (user.wishlist.length === initialLength) {
       console.log(`removeFromWishlist: Product ${productId} not found in wishlist.`);

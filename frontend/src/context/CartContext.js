@@ -43,7 +43,8 @@ export const CartProvider = ({ children }) => {
       const response = await axios.get('/api/users/cart', {
         headers: { Authorization: `Bearer ${authToken}` }
       });
-      setCartItems(response.data.items || []);
+      const items = Array.isArray(response.data) ? response.data : (response.data?.items || []);
+      setCartItems(items);
     } catch (error) {
       console.error('Error fetching cart items:', error);
       setCartItems([]);
@@ -59,7 +60,8 @@ export const CartProvider = ({ children }) => {
       const response = await axios.get('/api/users/wishlist', {
         headers: { Authorization: `Bearer ${authToken}` }
       });
-      setWishlistItems(response.data.items || []);
+      const items = Array.isArray(response.data) ? response.data : (response.data?.items || []);
+      setWishlistItems(items);
     } catch (error) {
       console.error('Error fetching wishlist items:', error);
       setWishlistItems([]);

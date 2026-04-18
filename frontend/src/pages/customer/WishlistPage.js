@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { FiShoppingCart, FiX } from 'react-icons/fi'; // Icons for cart and remove
 import axios from 'axios'; // Import axios for API calls
 import { useAuth } from '../../context/AuthContext'; // Import useAuth for token
+import { useCart } from '../../context/CartContext'; // Import useCart
 import { formatCurrency } from '../../utils/currencyFormatter';
 
 const WishlistPage = () => {
@@ -14,6 +15,7 @@ const WishlistPage = () => {
 
     // Get auth token from context
     const { authToken } = useAuth();
+    const { addToCart, removeFromWishlist } = useCart();
 
     // Function to fetch wishlist items (defined outside useEffect to be reusable)
     const fetchWishlist = async () => {
@@ -63,20 +65,8 @@ const WishlistPage = () => {
         }
 
         try {
-            const token = authToken || localStorage.getItem('token'); // Get token
-            if (!token) {
-                setError("Authentication token not found. Please sign in.");
-                return;
-            }
-
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            };
-
-            // Make API call to remove item from wishlist
-            await axios.delete(`/api/users/wishlist/${productId}`, config);
+            // Call context to remove item from wishlist
+            await removeFromWishlist(productId);
 
             // Update state to remove item from UI immediately
             setWishlistItems(wishlistItems.filter(item => item._id !== productId));
@@ -97,29 +87,12 @@ const WishlistPage = () => {
     // Handle moving an item to the cart - FIXED IMPLEMENTATION
     const handleMoveToCart = async (productId) => {
         try {
-            const token = authToken || localStorage.getItem('token');
-            if (!token) {
-                alert("Authentication token not found. Please sign in.");
-                return;
-            }
-
-            const config = {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-            };
-
-            // First, add the item to cart
-            await axios.post('/api/users/cart', { 
-                productId: productId, 
-                quantity: 1 
-            }, config);
-
+            // Use context to add to cart to update global state
+            await addToCart(productId, 1);
             console.log(`Item ${productId} added to cart successfully`);
             
-            // Then remove from wishlist
-            await axios.delete(`/api/users/wishlist/${productId}`, config);
+            // Call context to remove from wishlist
+            await removeFromWishlist(productId);
             
             // Update the wishlist state to remove the item
             setWishlistItems(wishlistItems.filter(item => item._id !== productId));
