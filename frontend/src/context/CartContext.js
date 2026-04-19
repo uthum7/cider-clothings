@@ -132,11 +132,15 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = async (itemId) => {
+    // Optimistic Update
+    const previousCartItems = [...cartItems];
+    setCartItems(prevItems => prevItems.filter(item => item._id !== itemId));
+
     if (!authToken) {
       let guestCart = JSON.parse(localStorage.getItem('guestCart')) || [];
       guestCart = guestCart.filter(item => item._id !== itemId);
       localStorage.setItem('guestCart', JSON.stringify(guestCart));
-      setCartItems(guestCart);
+      // No need to setCartItems again as it's done optimistically above
       return;
     }
     
@@ -144,9 +148,12 @@ export const CartProvider = ({ children }) => {
       await axios.delete(`/api/users/cart/${itemId}`, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
-      await fetchCartItems();
+      // Optionally refresh to sync with server state
+      // await fetchCartItems();
     } catch (error) {
       console.error('Error removing from cart:', error);
+      // Revert on error
+      setCartItems(previousCartItems);
       throw error;
     }
   };
@@ -166,23 +173,33 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateCartItemQuantity = async (itemId, quantity) => {
+    // Optimistic Update
+    const previousCartItems = [...cartItems];
+    setCartItems(prevItems => 
+      prevItems.map(item => item._id === itemId ? { ...item, quantity } : item)
+    );
+
     if (!authToken) {
       let guestCart = JSON.parse(localStorage.getItem('guestCart')) || [];
       guestCart = guestCart.map(item => item._id === itemId ? { ...item, quantity } : item);
       localStorage.setItem('guestCart', JSON.stringify(guestCart));
-      setCartItems(guestCart);
+      // No need to setCartItems again as it's done optimistically above
       return;
     }
     
     try {
-      await axios.patch(`/api/users/cart/${itemId}`, {
+      // Backend expects PUT /api/users/cart/:productId
+      await axios.put(`/api/users/cart/${itemId}`, {
         quantity
       }, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
-      await fetchCartItems();
+      // Optionally refresh to sync with server state (e.g. if stock changed)
+      // await fetchCartItems(); 
     } catch (error) {
       console.error('Error updating cart item:', error);
+      // Revert on error
+      setCartItems(previousCartItems);
       throw error;
     }
   };
@@ -191,7 +208,7 @@ export const CartProvider = ({ children }) => {
   const cartItemCount = cartItems.reduce((total, item) => total + (item.quantity || 1), 0);
   const wishlistItemCount = wishlistItems.length;
   const cartTotal = cartItems.reduce((total, item) => {
-    return total + ((item.product?.price || 0) * (item.quantity || 1));
+    return total + ((item.price || 0) * (item.quantity || 1));
   }, 0);
 
   const value = {
