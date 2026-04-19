@@ -47,90 +47,80 @@ const ProductListPage = () => {
     const [availableCategories, setAvailableCategories] = useState([]);
     const [availableSizes, setAvailableSizes] = useState([]);
     const [availableColors, setAvailableColors] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [filterState, setFilterState] = useState({ category: [], size: [], color: [] });
     const location = useLocation();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            setError('');
-            try {
-                // Get category from URL
-                const searchParams = new URLSearchParams(location.search);
-                const categoryFromUrl = searchParams.get('category');
-                
-                // Fetch products
-                let url = '/api/products';
-                if (categoryFromUrl) {
-                    url += `?category=${encodeURIComponent(categoryFromUrl)}`;
-                }
-                const productsResponse = await axios.get(url);
-                setProducts(productsResponse.data);
+    // Centralized fetch function
+    const fetchProductsData = async (shouldShowMainLoader = false) => {
+        if (shouldShowMainLoader) setLoading(true);
+        else setFilterLoading(true);
 
-                // Fetch filters (categories, sizes, colors)
+        try {
+            const params = new URLSearchParams();
+            
+            // Get category from URL or filter state
+            const categoryFromUrl = new URLSearchParams(location.search).get('category');
+            if (filterState.category.length > 0) {
+                params.append('category', filterState.category[0]);
+            } else if (categoryFromUrl) {
+                params.append('category', categoryFromUrl);
+            }
+
+            if (filterState.size.length > 0) params.append('sizes', filterState.size.join(','));
+            if (filterState.color.length > 0) params.append('colors', filterState.color.join(','));
+            if (searchTerm.trim()) params.append('search', searchTerm.trim());
+
+            const response = await axios.get(`/api/products?${params.toString()}`);
+            setProducts(response.data);
+            setError('');
+        } catch (err) {
+            console.error("Error fetching products:", err);
+            setError(err.response?.data?.message || err.message || 'Failed to load products.');
+        } finally {
+            setLoading(false);
+            setFilterLoading(false);
+        }
+    };
+
+    // Initial fetch for products and filters
+    useEffect(() => {
+        const fetchFilters = async () => {
+             try {
                 const filtersResponse = await axios.get('/api/products/filters');
                 if (filtersResponse.data) {
                     const { categories, sizes, colors } = filtersResponse.data;
                     setAvailableCategories(categories.map(cat => cat.name));
                     setAvailableSizes(sizes);
                     setAvailableColors(colors);
-                } else {
-                    console.error("Unexpected response format for filters:", filtersResponse.data);
                 }
             } catch (err) {
-                console.error("Error fetching products or categories:", err);
-                let errorMessage = 'Failed to load products.';
-                if (err.response && err.response.data && err.response.data.message) {
-                    errorMessage = err.response.data.message;
-                } else if (err.message) {
-                    errorMessage = err.message;
-                }
-                setError(errorMessage);
-                setProducts([]);
-            } finally {
-                setLoading(false);
+                console.error("Error fetching filters:", err);
             }
         };
-
-        fetchData();
+        fetchFilters();
+        fetchProductsData(true);
     }, [location.search]);
 
-    const handleFilterChange = async (filterType, values) => {
-        const newFilterState = { ...filterState, [filterType]: values };
-        setFilterState(newFilterState);
-
-        try {
-            setFilterLoading(true);
-            const params = new URLSearchParams();
-            
-            if (newFilterState.category.length > 0) {
-                params.append('category', newFilterState.category[0]); 
-            } else {
-                 const searchParams = new URLSearchParams(location.search);
-                 const categoryFromUrl = searchParams.get('category');
-                 if(categoryFromUrl) params.append('category', categoryFromUrl);
-            }
-            
-            if (newFilterState.size.length > 0) params.append('sizes', newFilterState.size.join(','));
-            if (newFilterState.color.length > 0) params.append('colors', newFilterState.color.join(','));
-
-            const url = `/api/products?${params.toString()}`;
-            const response = await axios.get(url);
-            setProducts(response.data);
-            setError(''); 
-        } catch (err) {
-            console.error(`Error fetching filtered products:`, err);
-            let errorMessage = `Failed to filter products.`;
-            if (err.response && err.response.data && err.response.data.message) {
-                errorMessage = err.response.data.message;
-            } else if (err.message) {
-                errorMessage = err.message;
-            }
-            setError(errorMessage);
-            setProducts([]);
-        } finally {
-            setFilterLoading(false);
+    // Recalculate when filters change
+    useEffect(() => {
+        // Skip initial mount as it's handled by location effect
+        if (!loading) {
+            fetchProductsData();
         }
+    }, [filterState]);
+
+    // Debounced search effect
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!loading) fetchProductsData();
+        }, 500); // 500ms debounce
+
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    const handleFilterChange = (filterType, values) => {
+        setFilterState(prev => ({ ...prev, [filterType]: values }));
     };
 
     // Main loading state with beautiful spinner
@@ -185,7 +175,9 @@ const ProductListPage = () => {
                              <input
                                 type="text"
                                 placeholder="Search for products..."
-                                className="w-full pl-10 pr-4 py-2 border rounded-md"
+                                className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                              />
                              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         </div>

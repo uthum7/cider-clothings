@@ -14,6 +14,15 @@ exports.getProducts = async (req, res) => {
         return res.json([]); // Return empty if category not found
       }
     }
+
+    // Add Search keyword filtering
+    if (req.query.search) {
+      const searchRegex = new RegExp(req.query.search, 'i');
+      query.$or = [
+        { name: searchRegex },
+        { description: searchRegex }
+      ];
+    }
     
     // Add Size Array searching
     if (req.query.sizes) {
