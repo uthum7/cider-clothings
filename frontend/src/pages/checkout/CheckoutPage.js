@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { FiChevronDown } from 'react-icons/fi';
 import { formatCurrency } from '../../utils/currencyFormatter';
 import { getColorCode } from '../../utils/colorHelper';
 
@@ -15,8 +16,93 @@ const COUNTRIES = [
     'Sri Lanka', 'India', 'United States', 'United Kingdom', 'Australia', 
     'Canada', 'United Arab Emirates', 'Qatar', 'Kuwait', 'Saudi Arabia', 
     'Oman', 'Singapore', 'Malaysia', 'Japan', 'France', 'Germany', 
-    'Italy', 'Spain', 'New Zealand', 'Maldives'
+    'Italy', 'Spain', 'New Zealand', 'Maldives', 'Netherlands', 'Sweden',
+    'Switzerland', 'Norway', 'Denmark', 'Belgium', 'Austria', 'Russia',
+    'China', 'South Korea', 'Brazil', 'Mexico', 'South Africa', 'Egypt',
+    'Nigeria', 'Kenya', 'Thailand', 'Vietnam', 'Philippines', 'Indonesia',
+    'Turkey', 'Israel', 'Greece', 'Portugal', 'Ireland', 'Poland', 'Finland',
+    'Singapore', 'New Zealand', 'Pakistan', 'Bangladesh'
 ];
+
+const SearchableSelect = ({ label, name, value, options, placeholder, onChange, required }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState(value || '');
+    const containerRef = React.useRef(null);
+
+    useEffect(() => {
+        setSearchTerm(value || '');
+    }, [value]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (containerRef.current && !containerRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const filteredOptions = options.filter(option => 
+        option.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const handleSelect = (option) => {
+        setSearchTerm(option);
+        onChange({ target: { name, value: option } });
+        setIsOpen(false);
+    };
+
+    const handleInputChange = (e) => {
+        const val = e.target.value;
+        setSearchTerm(val);
+        onChange({ target: { name, value: val } });
+        setIsOpen(true);
+    };
+
+    return (
+        <div className="relative" ref={containerRef}>
+            <label className="block text-sm font-medium text-gray-700">{label} {required && '*'}</label>
+            <div className="relative mt-1">
+                <input
+                    type="text"
+                    name={name}
+                    value={searchTerm}
+                    placeholder={placeholder}
+                    autoComplete="off"
+                    onFocus={() => setIsOpen(true)}
+                    onChange={handleInputChange}
+                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 pr-10"
+                />
+                <div 
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer pointer-events-none"
+                >
+                    <FiChevronDown className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                </div>
+                
+                {isOpen && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto scrollbar-hide">
+                        {filteredOptions.length > 0 ? (
+                            filteredOptions.map((option, idx) => (
+                                <div
+                                    key={idx}
+                                    onClick={() => handleSelect(option)}
+                                    className={`px-4 py-3 cursor-pointer text-sm transition-colors hover:bg-indigo-50 ${
+                                        option === value ? 'bg-indigo-50 font-medium text-indigo-700' : 'text-gray-700'
+                                    }`}
+                                >
+                                    {option}
+                                </div>
+                            ))
+                        ) : (
+                            <div className="px-4 py-3 text-sm text-gray-500 italic">No matches found</div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
 
 const CheckoutPage = () => {
     const { cartItems, loading, fetchCartItems } = useCart();
@@ -355,22 +441,14 @@ const CheckoutPage = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="state" className="block text-sm font-medium text-gray-700">State/Province</label>
-                                    <input 
-                                        type="text" 
-                                        id="state" 
-                                        name="state" 
-                                        list="province-list"
-                                        placeholder="Select or type province"
+                                    <SearchableSelect 
+                                        label="State/Province"
+                                        name="state"
                                         value={shippingInfo.state}
+                                        options={PROVINCES}
+                                        placeholder="Select or type province"
                                         onChange={handleShippingChange}
-                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                     />
-                                    <datalist id="province-list">
-                                        {PROVINCES.map(province => (
-                                            <option key={province} value={province} />
-                                        ))}
-                                    </datalist>
                                 </div>
                                 <div>
                                     <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700">ZIP Code</label>
@@ -397,22 +475,14 @@ const CheckoutPage = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="country" className="block text-sm font-medium text-gray-700">Country</label>
-                                    <input 
-                                        type="text"
-                                        id="country" 
-                                        name="country" 
-                                        list="country-list"
-                                        placeholder="Select or type country"
+                                    <SearchableSelect 
+                                        label="Country"
+                                        name="country"
                                         value={shippingInfo.country}
+                                        options={COUNTRIES}
+                                        placeholder="Select or type country"
                                         onChange={handleShippingChange}
-                                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                     />
-                                    <datalist id="country-list">
-                                        {COUNTRIES.map(country => (
-                                            <option key={country} value={country} />
-                                        ))}
-                                    </datalist>
                                 </div>
                             </div>
                         </div>
