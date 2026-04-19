@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ToastProvider } from './context/ToastContext';
+import { ModalProvider } from './context/ModalContext';
 import DefaultLayout from './components/DefaultLayout';
 import AdminLayout from './components/admin/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -52,44 +53,45 @@ function App() {
       <AuthProvider>
         <CartProvider>
           <ToastProvider>
-            <Routes>
-              {/* --- PUBLIC & CUSTOMER ROUTES --- */}
-              <Route path="/" element={<DefaultLayout />}>
-                <Route index element={<HomePage />} />
-                <Route path="products" element={<ProductListPage />} />
-                <Route path="products/:productId" element={<ProductDetailPage />} />
-                <Route path="support" element={<CustomerSupportPage />} />
-                <Route path="faq" element={<FaqPage />} />
-                <Route path="contact" element={<ContactUsPage />} />
-                <Route path="refund-policy" element={<RefundPolicyPage />} />
-                <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
-                <Route path="terms-conditions" element={<TermsConditionsPage />} />
-                <Route path="signin" element={<SignInPage />} />
-                <Route path="signup" element={<SignUpPage />} />
-                <Route path="forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="dashboard" element={<ProtectedRoute><CustomerDashboardPage /></ProtectedRoute>} />
-                <Route path="profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-                <Route path="profile/update" element={<ProtectedRoute><UpdateProfilePage /></ProtectedRoute>} />
-                <Route path="orders" element={<ProtectedRoute><OrderHistoryPage /></ProtectedRoute>} />
-                <Route path="wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
-                <Route path="cart" element={<ShoppingCartPage />} />
-                <Route path="checkout" element={<CheckoutPage />} />
-                <Route path="order-success" element={<ProtectedRoute><OrderSuccessPage /></ProtectedRoute>} />
-                {/* NEW ROUTE ADDED */}
-              </Route>
+            <ModalProvider>
+              <Routes>
+                {/* --- PUBLIC & CUSTOMER ROUTES --- */}
+                <Route path="/" element={<DefaultLayout />}>
+                  <Route index element={<HomePage />} />
+                  <Route path="products" element={<ProductListPage />} />
+                  <Route path="products/:productId" element={<ProductDetailPage />} />
+                  <Route path="support" element={<CustomerSupportPage />} />
+                  <Route path="faq" element={<FaqPage />} />
+                  <Route path="contact" element={<ContactUsPage />} />
+                  <Route path="refund-policy" element={<RefundPolicyPage />} />
+                  <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
+                  <Route path="terms-conditions" element={<TermsConditionsPage />} />
+                  <Route path="signin" element={<SignInPage />} />
+                  <Route path="signup" element={<SignUpPage />} />
+                  <Route path="forgot-password" element={<ForgotPasswordPage />} />
+                  <Route path="dashboard" element={<ProtectedRoute><CustomerDashboardPage /></ProtectedRoute>} />
+                  <Route path="profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                  <Route path="profile/update" element={<ProtectedRoute><UpdateProfilePage /></ProtectedRoute>} />
+                  <Route path="orders" element={<ProtectedRoute><OrderHistoryPage /></ProtectedRoute>} />
+                  <Route path="wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
+                  <Route path="cart" element={<ShoppingCartPage />} />
+                  <Route path="checkout" element={<CheckoutPage />} />
+                  <Route path="order-success" element={<ProtectedRoute><OrderSuccessPage /></ProtectedRoute>} />
+                </Route>
 
-              {/* --- ADMIN ROUTES --- */}
-              <Route path="/admin" element={<ProtectedRoute adminOnly={true}><AdminLayout /></ProtectedRoute>}>
-                <Route path="dashboard" element={<AdminDashboardPage />} />
-                <Route path="products" element={<ProductManagementPage />} />
-                <Route path="products/new" element={<AddNewProductPage />} />
-                <Route path="products/edit/:productId" element={<EditProductPage />} />
-                <Route path="orders" element={<OrderManagementPage />} />
-                <Route path="users" element={<UserManagementPage />} />
-                <Route path="analytics" element={<AnalyticsPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-              </Route>
-            </Routes>
+                {/* --- ADMIN ROUTES --- */}
+                <Route path="/admin" element={<ProtectedRoute adminOnly={true}><AdminLayout /></ProtectedRoute>}>
+                  <Route path="dashboard" element={<AdminDashboardPage />} />
+                  <Route path="products" element={<ProductManagementPage />} />
+                  <Route path="products/new" element={<AddNewProductPage />} />
+                  <Route path="products/edit/:productId" element={<EditProductPage />} />
+                  <Route path="orders" element={<OrderManagementPage />} />
+                  <Route path="users" element={<UserManagementPage />} />
+                  <Route path="analytics" element={<AnalyticsPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                </Route>
+              </Routes>
+            </ModalProvider>
           </ToastProvider>
         </CartProvider>
       </AuthProvider>

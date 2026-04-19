@@ -6,6 +6,8 @@ import { FiSearch, FiChevronDown } from 'react-icons/fi';
 // Remove: import axios from 'axios';
 import apiClient from '../../api/axiosConfig'; // <-- Import your configured axios instance
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { useModal } from '../../context/ModalContext';
 import { formatCurrency } from '../../utils/currencyFormatter';
 
 // ... (FilterSection component remains the same) ...
@@ -15,6 +17,8 @@ const ProductManagementPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { authToken } = useAuth();
+  const { showSuccess, showError } = useToast();
+  const { showConfirm } = useModal();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -56,9 +60,11 @@ const ProductManagementPage = () => {
   }, [authToken]);
 
   const handleDelete = async (productId) => {
-    if (!window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-        return;
-    }
+    const confirmed = await showConfirm(
+        'Delete Product',
+        'Are you sure you want to delete this product? This action cannot be undone.'
+    );
+    if (!confirmed) return;
 
     try {
         const token = authToken || localStorage.getItem('token');
@@ -77,7 +83,7 @@ const ProductManagementPage = () => {
         await apiClient.delete(`/api/admin/products/${productId}`, config); // <-- Use apiClient
 
         setProducts(products.filter(product => product._id !== productId));
-        alert('Product deleted successfully!');
+        showSuccess('Product deleted successfully!');
 
     } catch (err) {
         console.error("Delete Product API Error:", err);
@@ -85,9 +91,8 @@ const ProductManagementPage = () => {
         if (err.response && err.response.data && err.response.data.message) {
             errorMessage = err.response.data.message;
         } else if (err.message) {
-            errorMessage = err.message;
+          showError(errorMessage);
         }
-        setError(errorMessage);
     }
   };
 

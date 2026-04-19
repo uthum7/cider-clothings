@@ -5,11 +5,13 @@ import { FiTrash2, FiArrowRight } from 'react-icons/fi';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { useModal } from '../../context/ModalContext';
 import { formatCurrency } from '../../utils/currencyFormatter';
 import { getColorCode } from '../../utils/colorHelper';
 
 const ShoppingCartPage = () => {
     const { cartItems, loading, removeFromCart, updateCartItemQuantity, fetchCartItems } = useCart();
+    const { showConfirm } = useModal();
     const [error, setError] = useState('');
     const [updating, setUpdating] = useState(false);
 
@@ -34,7 +36,11 @@ const ShoppingCartPage = () => {
     };
 
     const handleRemoveItem = async (productId) => {
-        if (!window.confirm('Are you sure you want to remove this item from your cart?')) return;
+        const confirmed = await showConfirm(
+            'Remove Item',
+            'Are you sure you want to remove this item from your cart?'
+        );
+        if (!confirmed) return;
         setUpdating(true);
         try {
             await removeFromCart(productId);

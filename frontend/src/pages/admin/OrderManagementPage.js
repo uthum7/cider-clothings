@@ -5,6 +5,7 @@ import { Search } from 'lucide-react';
 // import { mockOrders } from '../../data/mockDatabase'; // Mock data is no longer used
 import axios from 'axios'; // Import axios
 import { useAuth } from '../../context/AuthContext'; // Import useAuth for token
+import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils/currencyFormatter';
 
 const getStatusClass = (status) => {
@@ -25,6 +26,7 @@ const OrderManagementPage = () => {
 
   // Get auth token
   const { authToken } = useAuth();
+  const { showSuccess } = useToast();
 
   // Fetch orders when the component mounts or authToken changes
   useEffect(() => {
@@ -70,7 +72,7 @@ const OrderManagementPage = () => {
   const handleStatusChange = async (orderId, newStatus) => {
     // In a real app, this would be an API call to PATCH /api/orders/:orderId/status
     console.log(`SIMULATING API CALL: Updating order ${orderId} status to "${newStatus}"`);
-    alert(`(Simulation) Order ${orderId} status updated to ${newStatus}.`);
+    showSuccess(`Order ${orderId} status updated to ${newStatus}.`);
 
     // Optionally, refetch or update state to reflect the change immediately
     // For simplicity, we're not refetching here, but you might want to:

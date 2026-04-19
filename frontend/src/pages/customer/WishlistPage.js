@@ -5,6 +5,8 @@ import { FiShoppingCart, FiX } from 'react-icons/fi'; // Icons for cart and remo
 import axios from 'axios'; // Import axios for API calls
 import { useAuth } from '../../context/AuthContext'; // Import useAuth for token
 import { useCart } from '../../context/CartContext'; // Import useCart
+import { useModal } from '../../context/ModalContext';
+import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils/currencyFormatter';
 
 const WishlistPage = () => {
@@ -16,6 +18,8 @@ const WishlistPage = () => {
     // Get auth token from context
     const { authToken } = useAuth();
     const { addToCart, removeFromWishlist } = useCart();
+    const { showConfirm } = useModal();
+    const { showSuccess, showError } = useToast();
 
     // Function to fetch wishlist items (defined outside useEffect to be reusable)
     const fetchWishlist = async () => {
@@ -60,9 +64,11 @@ const WishlistPage = () => {
 
     // Handle removing an item from the wishlist
     const handleRemove = async (productId) => {
-        if (!window.confirm('Are you sure you want to remove this item from your wishlist?')) {
-            return; // User cancelled
-        }
+        const confirmed = await showConfirm(
+            'Remove from Wishlist',
+            'Are you sure you want to remove this item from your wishlist?'
+        );
+        if (!confirmed) return;
 
         try {
             // Call context to remove item from wishlist
@@ -70,7 +76,7 @@ const WishlistPage = () => {
 
             // Update state to remove item from UI immediately
             setWishlistItems(wishlistItems.filter(item => item._id !== productId));
-            alert('Item removed from wishlist!');
+            showSuccess('Item removed from wishlist!');
 
         } catch (err) {
             console.error("Remove from Wishlist API Error:", err);
@@ -97,7 +103,7 @@ const WishlistPage = () => {
             // Update the wishlist state to remove the item
             setWishlistItems(wishlistItems.filter(item => item._id !== productId));
             
-            alert('Item moved to cart successfully!');
+            showSuccess('Item moved to cart successfully!');
 
         } catch (err) {
             console.error("Move to Cart API Error:", err);
@@ -107,7 +113,7 @@ const WishlistPage = () => {
             } else if (err.message) {
                 errorMessage = err.message;
             }
-            alert(errorMessage);
+            showError(errorMessage);
         }
     };
 
