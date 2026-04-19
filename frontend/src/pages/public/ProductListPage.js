@@ -45,6 +45,8 @@ const ProductListPage = () => {
     const [filterLoading, setFilterLoading] = useState(false); // Separate loading for filters
     const [error, setError] = useState('');
     const [availableCategories, setAvailableCategories] = useState([]);
+    const [availableSizes, setAvailableSizes] = useState([]);
+    const [availableColors, setAvailableColors] = useState([]);
     const [filterState, setFilterState] = useState({ category: [], size: [], color: [] });
     const location = useLocation();
 
@@ -65,13 +67,15 @@ const ProductListPage = () => {
                 const productsResponse = await axios.get(url);
                 setProducts(productsResponse.data);
 
-                // Fetch categories for filters
-                const categoriesResponse = await axios.get('/api/products/categories');
-                if (categoriesResponse.data && Array.isArray(categoriesResponse.data)) {
-                    setAvailableCategories(categoriesResponse.data.map(cat => cat.name));
+                // Fetch filters (categories, sizes, colors)
+                const filtersResponse = await axios.get('/api/products/filters');
+                if (filtersResponse.data) {
+                    const { categories, sizes, colors } = filtersResponse.data;
+                    setAvailableCategories(categories.map(cat => cat.name));
+                    setAvailableSizes(sizes);
+                    setAvailableColors(colors);
                 } else {
-                    console.error("Unexpected response format for categories:", categoriesResponse.data);
-                    setError("Failed to load categories.");
+                    console.error("Unexpected response format for filters:", filtersResponse.data);
                 }
             } catch (err) {
                 console.error("Error fetching products or categories:", err);
@@ -170,8 +174,8 @@ const ProductListPage = () => {
                         <h2 className="text-lg font-medium text-gray-900">Filters</h2>
                         <div className="mt-4">
                             <FilterSection title="Category" options={availableCategories} onFilterChange={handleFilterChange} />
-                            <FilterSection title="Size" options={['XS', 'S', 'M', 'L', 'XL', 'XXL']} onFilterChange={handleFilterChange} />
-                            <FilterSection title="Color" options={['Black', 'White', 'Navy', 'Beige', 'Olive Green']} onFilterChange={handleFilterChange} />
+                            {availableSizes.length > 0 && <FilterSection title="Size" options={availableSizes} onFilterChange={handleFilterChange} />}
+                            {availableColors.length > 0 && <FilterSection title="Color" options={availableColors} onFilterChange={handleFilterChange} />}
                         </div>
                     </aside>
 

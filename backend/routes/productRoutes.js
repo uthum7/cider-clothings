@@ -1,13 +1,14 @@
 // backend/routes/productRoutes.js
 const express = require('express');
-const { getProducts, getProductById, getCategories } = require('../controllers/productController');
+const { getProducts, getProductById, getCategories, getFilters } = require('../controllers/productController');
 
 const router = express.Router();
 
 console.log("--- ProductRoutes: Defining routes ---");
 
-// Define the specific route for categories FIRST
+// Define specific routes FIRST
 router.get('/categories', getCategories);
+router.get('/filters', getFilters);
 console.log("Registered GET /api/products/categories");
 
 // Then define the route that accepts a dynamic ID

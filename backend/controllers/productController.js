@@ -59,6 +59,30 @@ exports.getProductById = async (req, res) => {
   }
 };
 
+exports.getFilters = async (req, res) => {
+  try {
+    const activeProductsQuery = { status: 'Active' };
+    
+    // Get unique sizes across all active products
+    const sizes = await Product.distinct('sizes', activeProductsQuery);
+    
+    // Get unique colors across all active products
+    const colors = await Product.distinct('colors', activeProductsQuery);
+    
+    // Get all categories (or just those with active products)
+    const categories = await Category.find({}, 'name');
+
+    res.json({
+      sizes: sizes.filter(s => s && s.trim() !== ''),
+      colors: colors.filter(c => c && c.trim() !== ''),
+      categories: categories
+    });
+  } catch (error) {
+    console.error("ProductController: Error fetching filters:", error);
+    res.status(500).json({ message: 'Server error fetching filters' });
+  }
+};
+
 exports.getCategories = async (req, res) => {
   try {
     console.log("--- ProductController: Hit getCategories route ---");
