@@ -6,6 +6,18 @@ import { useCart } from '../../context/CartContext';
 import { formatCurrency } from '../../utils/currencyFormatter';
 import { getColorCode } from '../../utils/colorHelper';
 
+const PROVINCES = [
+    'Central', 'Eastern', 'North Central', 'Northern', 
+    'North Western', 'Sabaragamuwa', 'Southern', 'Uva', 'Western'
+];
+
+const COUNTRIES = [
+    'Sri Lanka', 'India', 'United States', 'United Kingdom', 'Australia', 
+    'Canada', 'United Arab Emirates', 'Qatar', 'Kuwait', 'Saudi Arabia', 
+    'Oman', 'Singapore', 'Malaysia', 'Japan', 'France', 'Germany', 
+    'Italy', 'Spain', 'New Zealand', 'Maldives'
+];
+
 const CheckoutPage = () => {
     const { cartItems, loading, fetchCartItems } = useCart();
     const [orderLoading, setOrderLoading] = useState(false);
@@ -296,6 +308,7 @@ const CheckoutPage = () => {
                                         type="text" 
                                         id="firstName" 
                                         name="firstName" 
+                                        placeholder="e.g. John"
                                         required 
                                         value={shippingInfo.firstName}
                                         onChange={handleShippingChange}
@@ -308,6 +321,7 @@ const CheckoutPage = () => {
                                         type="text" 
                                         id="lastName" 
                                         name="lastName" 
+                                        placeholder="e.g. Doe"
                                         required 
                                         value={shippingInfo.lastName}
                                         onChange={handleShippingChange}
@@ -320,6 +334,7 @@ const CheckoutPage = () => {
                                         type="text" 
                                         id="address" 
                                         name="address" 
+                                        placeholder="e.g. 123 Flower Road"
                                         required 
                                         value={shippingInfo.address}
                                         onChange={handleShippingChange}
@@ -332,6 +347,7 @@ const CheckoutPage = () => {
                                         type="text" 
                                         id="city" 
                                         name="city" 
+                                        placeholder="e.g. Colombo"
                                         required 
                                         value={shippingInfo.city}
                                         onChange={handleShippingChange}
@@ -344,10 +360,17 @@ const CheckoutPage = () => {
                                         type="text" 
                                         id="state" 
                                         name="state" 
+                                        list="province-list"
+                                        placeholder="Select or type province"
                                         value={shippingInfo.state}
                                         onChange={handleShippingChange}
                                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                                     />
+                                    <datalist id="province-list">
+                                        {PROVINCES.map(province => (
+                                            <option key={province} value={province} />
+                                        ))}
+                                    </datalist>
                                 </div>
                                 <div>
                                     <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700">ZIP Code</label>
@@ -355,6 +378,7 @@ const CheckoutPage = () => {
                                         type="text" 
                                         id="zipCode" 
                                         name="zipCode" 
+                                        placeholder="e.g. 00100"
                                         value={shippingInfo.zipCode}
                                         onChange={handleShippingChange}
                                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
@@ -366,6 +390,7 @@ const CheckoutPage = () => {
                                         type="tel" 
                                         id="phone" 
                                         name="phone" 
+                                        placeholder="e.g. 0712345678"
                                         value={shippingInfo.phone}
                                         onChange={handleShippingChange}
                                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
@@ -373,18 +398,21 @@ const CheckoutPage = () => {
                                 </div>
                                 <div>
                                     <label htmlFor="country" className="block text-sm font-medium text-gray-700">Country</label>
-                                    <select 
+                                    <input 
+                                        type="text"
                                         id="country" 
                                         name="country" 
+                                        list="country-list"
+                                        placeholder="Select or type country"
                                         value={shippingInfo.country}
                                         onChange={handleShippingChange}
                                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                    >
-                                        <option value="Sri Lanka">Sri Lanka</option>
-                                        <option value="India">India</option>
-                                        <option value="USA">United States</option>
-                                        <option value="UK">United Kingdom</option>
-                                    </select>
+                                    />
+                                    <datalist id="country-list">
+                                        {COUNTRIES.map(country => (
+                                            <option key={country} value={country} />
+                                        ))}
+                                    </datalist>
                                 </div>
                             </div>
                         </div>
@@ -400,6 +428,7 @@ const CheckoutPage = () => {
                                         type="text" 
                                         id="cardName" 
                                         name="cardName" 
+                                        placeholder="e.g. JOHN DOE"
                                         value={paymentInfo.cardName}
                                         onChange={handlePaymentChange}
                                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
